@@ -1,5 +1,6 @@
 import type {
   AuthSession,
+  LandmarkSearchResult,
   RequestOtpPayload,
   RequestOtpResponse,
   User,
@@ -59,4 +60,16 @@ export function verifyOtp(payload: VerifyOtpPayload) {
 
 export function getMe(token: string) {
   return apiFetch<User>("/auth/me", { token });
+}
+
+export function searchLandmarks(
+  q: string,
+  proximity?: { lat: number; lng: number },
+) {
+  const params = new URLSearchParams({ q });
+  if (proximity) {
+    params.set("lat", String(proximity.lat));
+    params.set("lng", String(proximity.lng));
+  }
+  return apiFetch<LandmarkSearchResult[]>(`/landmarks/search?${params}`);
 }

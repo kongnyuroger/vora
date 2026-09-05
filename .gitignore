@@ -9,6 +9,7 @@ apps/web/next-env.d.ts
 
 # nest
 apps/api/dist/
+packages/shared/dist/
 
 # env
 .env

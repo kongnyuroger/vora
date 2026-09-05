@@ -32,5 +32,16 @@
       "driver": "Driver",
       "logout": "Log out"
     }
+  },
+  "Map": {
+    "searchPlaceholder": "Search landmark (e.g. Carrefour Biyem-Assi)",
+    "searching": "E dey search…",
+    "noResults": "No result — try another spelling",
+    "clear": "Clear",
+    "pickupLabel": "Pickup",
+    "change": "Change",
+    "useMyLocation": "Use my location",
+    "locating": "E dey locate…",
+    "locationDenied": "Location access no work — turn am on for your browser settings"
   }
 }

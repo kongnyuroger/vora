@@ -1,14 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
-import { LogOut, MapPin, Search, ShieldCheck } from "lucide-react";
-import { Role } from "@vora/shared";
+import { Locate, LogOut, Search, ShieldCheck } from "lucide-react";
+import { Role, type LandmarkSearchResult } from "@vora/shared";
 import { Button } from "@/components/ui/button";
 import { BottomSheet, type SheetSnap } from "@/components/vora/bottom-sheet";
+import { LandmarkSearch } from "@/components/vora/map/landmark-search";
+import type { MapCanvasHandle } from "@/components/vora/map/map-canvas";
 import { Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
 import { useAuthStore } from "@/stores/auth-store";
+import { useGeolocation } from "@/hooks/use-geolocation";
+import { cn } from "@/lib/utils";
+
+const MapCanvas = dynamic(
+  () => import("@/components/vora/map/map-canvas").then((m) => m.MapCanvas),
+  { ssr: false, loading: () => <div className="absolute inset-0 bg-vora-ink" /> },
+);
 
 interface HomeScreenCopy {
   title: string;
@@ -25,17 +35,42 @@ const LOCALES: { code: AppLocale; label: string }[] = [
 
 export function HomeScreen({ copy }: { copy: HomeScreenCopy }) {
   const tSession = useTranslations("Auth.session");
+  const tMap = useTranslations("Map");
   const [snap, setSnap] = useState<SheetSnap>("peek");
+  const [pickup, setPickup] = useState<LandmarkSearchResult | null>(null);
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+
+  const mapRef = useRef<MapCanvasHandle>(null);
+  const { status: geoStatus, position: userPosition, requestLocation } =
+    useGeolocation();
+
+  useEffect(() => {
+    if (userPosition) {
+      mapRef.current?.setUserLocation(userPosition);
+      mapRef.current?.flyTo(userPosition.lat, userPosition.lng, 15);
+    }
+  }, [userPosition]);
 
   const roleLabel =
     user?.role === Role.DRIVER ? tSession("driver") : tSession("rider");
 
+  const handleSelectLandmark = (result: LandmarkSearchResult) => {
+    setPickup(result);
+    mapRef.current?.setPickup({ lat: result.lat, lng: result.lng });
+    mapRef.current?.flyTo(result.lat, result.lng, 15);
+    setSnap("half");
+  };
+
+  const clearPickup = () => {
+    setPickup(null);
+    mapRef.current?.setPickup(null);
+    setSnap("full");
+  };
+
   return (
     <main className="relative h-dvh w-full overflow-hidden bg-vora-ink">
-      {/* Map-hero placeholder — real Mapbox map lands in Branch 2 */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,var(--vora-green-700),var(--vora-ink)_70%)]" />
+      <MapCanvas ref={mapRef} />
 
       <div className="relative z-50 flex items-center justify-between px-5 pt-6">
         <span className="font-heading text-h2 font-bold tracking-tight text-white">
@@ -75,29 +110,76 @@ export function HomeScreen({ copy }: { copy: HomeScreenCopy }) {
         </div>
       )}
 
-      <div className="relative z-10 mt-6 px-6">
-        <p className="max-w-xs text-body text-white/85">{copy.tagline}</p>
-      </div>
+      {snap === "peek" && (
+        <button
+          type="button"
+          onClick={requestLocation}
+          aria-label={tMap("useMyLocation")}
+          className="fixed right-4 z-45 flex size-12 items-center justify-center rounded-full bg-card text-vora-green shadow-vora-soft transition-transform active:scale-95"
+          style={{ bottom: "calc(18dvh + 16px)" }}
+        >
+          <Locate
+            className={cn("size-5", geoStatus === "locating" && "animate-pulse")}
+          />
+        </button>
+      )}
 
       <BottomSheet snap={snap} onSnapChange={setSnap}>
-        <div className="flex flex-col gap-5">
-          <button
-            type="button"
-            onClick={() => setSnap("full")}
-            className="flex w-full items-center gap-3 rounded-card border border-border bg-secondary px-4 py-3.5 text-left text-body font-medium text-secondary-foreground shadow-vora-soft transition-transform active:scale-[0.98]"
-          >
-            <Search className="size-5 shrink-0 text-vora-green" />
-            {copy.cta}
-          </button>
+        <div className="flex flex-col gap-4">
+          {pickup ? (
+            <div className="flex items-center gap-3 rounded-card border border-border bg-secondary px-4 py-3.5 shadow-vora-soft">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-vora-amber-100">
+                <ShieldCheck className="size-4 text-vora-green-700" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-caption text-secondary-foreground/70">
+                  {tMap("pickupLabel")}
+                </span>
+                <span className="block truncate text-body font-medium text-secondary-foreground">
+                  {pickup.name}
+                </span>
+              </span>
+              <button
+                type="button"
+                onClick={clearPickup}
+                className="shrink-0 rounded-full px-3 py-1.5 text-caption font-medium text-vora-green"
+              >
+                {tMap("change")}
+              </button>
+            </div>
+          ) : snap === "peek" ? (
+            <button
+              type="button"
+              onClick={() => setSnap("full")}
+              className="flex w-full items-center gap-3 rounded-card border border-border bg-secondary px-4 py-3.5 text-left text-body font-medium text-secondary-foreground shadow-vora-soft transition-transform active:scale-[0.98]"
+            >
+              <Search className="size-5 shrink-0 text-vora-green" />
+              {copy.cta}
+            </button>
+          ) : (
+            <LandmarkSearch
+              proximity={userPosition ?? undefined}
+              onSelect={handleSelectLandmark}
+            />
+          )}
 
-          <div className="flex items-center gap-2 text-caption text-muted-foreground">
-            <MapPin className="size-4 text-vora-amber" />
-            {copy.scaffoldNotice}
-          </div>
+          {geoStatus === "denied" && (
+            <p className="text-caption text-destructive">
+              {tMap("locationDenied")}
+            </p>
+          )}
 
-          <Button size="cta" className="w-full">
-            {copy.cta}
-          </Button>
+          {snap === "peek" && (
+            <p className="text-caption text-muted-foreground">
+              {copy.tagline}
+            </p>
+          )}
+
+          {pickup && (
+            <Button size="cta" className="w-full">
+              {copy.cta}
+            </Button>
+          )}
         </div>
       </BottomSheet>
     </main>
