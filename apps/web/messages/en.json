@@ -17,7 +17,8 @@
       "phoneLabel": "Phone number",
       "continue": "Continue",
       "sending": "Sending…",
-      "errorInvalid": "Enter a valid 9-digit phone number"
+      "errorInvalid": "Enter a valid 9-digit phone number",
+      "errorGeneric": "Something went wrong — please try again"
     },
     "otp": {
       "title": "Enter the code",
@@ -27,7 +28,8 @@
       "verifying": "Verifying…",
       "changeNumber": "Change number",
       "resend": "Resend code",
-      "errorInvalid": "Incorrect or expired code"
+      "errorInvalid": "Incorrect or expired code",
+      "errorGeneric": "Something went wrong on our end — please try again"
     },
     "session": {
       "loggedInAs": "Logged in as {phone}",

@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Role } from "@vora/shared";
-import { requestOtp, verifyOtp } from "@/lib/api";
+import { ApiError, requestOtp, verifyOtp } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth-store";
 import { PhoneScreen } from "./phone-screen";
-import { OtpScreen } from "./otp-screen";
+import { OtpScreen, type OtpErrorKind } from "./otp-screen";
 
 export function AuthFlow() {
   const setSession = useAuthStore((s) => s.setSession);
@@ -36,10 +36,18 @@ export function AuthFlow() {
     },
   });
 
+  const verifyErrorKind: OtpErrorKind = verifyMutation.isError
+    ? verifyMutation.error instanceof ApiError &&
+      verifyMutation.error.status === 401
+      ? "invalid"
+      : "generic"
+    : null;
+
   if (!phone) {
     return (
       <PhoneScreen
         isPending={requestMutation.isPending}
+        hasError={requestMutation.isError}
         onSubmit={(phone, role) => requestMutation.mutate({ phone, role })}
       />
     );
@@ -50,7 +58,7 @@ export function AuthFlow() {
       phone={phone}
       devOtp={devOtp}
       isPending={verifyMutation.isPending}
-      hasError={verifyMutation.isError}
+      errorKind={verifyErrorKind}
       onBack={() => {
         setPhone(null);
         verifyMutation.reset();

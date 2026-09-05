@@ -17,7 +17,8 @@
       "phoneLabel": "Numéro de téléphone",
       "continue": "Continuer",
       "sending": "Envoi…",
-      "errorInvalid": "Entrez un numéro à 9 chiffres valide"
+      "errorInvalid": "Entrez un numéro à 9 chiffres valide",
+      "errorGeneric": "Une erreur est survenue — veuillez réessayer"
     },
     "otp": {
       "title": "Entrez le code",
@@ -27,7 +28,8 @@
       "verifying": "Vérification…",
       "changeNumber": "Changer de numéro",
       "resend": "Renvoyer le code",
-      "errorInvalid": "Code incorrect ou expiré"
+      "errorInvalid": "Code incorrect ou expiré",
+      "errorGeneric": "Une erreur est survenue de notre côté — veuillez réessayer"
     },
     "session": {
       "loggedInAs": "Connecté en tant que {phone}",

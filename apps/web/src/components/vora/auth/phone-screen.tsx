@@ -8,10 +8,15 @@ import { RoleToggle } from "./role-toggle";
 
 interface PhoneScreenProps {
   isPending: boolean;
+  hasError?: boolean;
   onSubmit: (phone: string, role: Role.RIDER | Role.DRIVER) => void;
 }
 
-export function PhoneScreen({ isPending, onSubmit }: PhoneScreenProps) {
+export function PhoneScreen({
+  isPending,
+  hasError,
+  onSubmit,
+}: PhoneScreenProps) {
   const t = useTranslations("Auth.phone");
   const [role, setRole] = useState<Role.RIDER | Role.DRIVER>(Role.RIDER);
   const [digits, setDigits] = useState("");
@@ -72,6 +77,12 @@ export function PhoneScreen({ isPending, onSubmit }: PhoneScreenProps) {
             </p>
           )}
         </div>
+
+        {hasError && (
+          <p className="mt-4 text-caption text-destructive">
+            {t("errorGeneric")}
+          </p>
+        )}
 
         <Button
           size="cta"
