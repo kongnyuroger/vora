@@ -120,7 +120,11 @@ export function OnTripSheet({
 
       {isTerminal && (
         <Button size="cta" className="w-full" onClick={onDone}>
-          {ride.status === RideStatus.COMPLETED ? t("done") : t("ok")}
+          {ride.status === RideStatus.COMPLETED
+            ? isDriver
+              ? t("doneDriver")
+              : t("done")
+            : t("ok")}
         </Button>
       )}
     </div>
