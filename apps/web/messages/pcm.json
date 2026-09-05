@@ -4,5 +4,33 @@
     "tagline": "Book bendskin, taxi, or shared ride by landmark, na fair fixed price.",
     "cta": "Where you dey go?",
     "scaffoldNotice": "Foundation don set — features go land branch by branch."
+  },
+  "Auth": {
+    "phone": {
+      "title": "Welcome to VORA",
+      "subtitle": "Enter your phone number make we continue.",
+      "roleRider": "Rider",
+      "roleDriver": "Driver",
+      "phoneLabel": "Phone number",
+      "continue": "Continue",
+      "sending": "E dey send…",
+      "errorInvalid": "Enter correct 9-digit phone number"
+    },
+    "otp": {
+      "title": "Enter the code",
+      "subtitle": "We don send 6-digit code go {phone}",
+      "devHint": "Dev mode — your code na",
+      "verify": "Verify",
+      "verifying": "E dey verify…",
+      "changeNumber": "Change number",
+      "resend": "Resend code",
+      "errorInvalid": "Code no correct or e don expire"
+    },
+    "session": {
+      "loggedInAs": "You don login as {phone}",
+      "rider": "Rider",
+      "driver": "Driver",
+      "logout": "Log out"
+    }
   }
 }

@@ -4,5 +4,33 @@
     "tagline": "Book a bendskin, a taxi, or a shared ride by landmark, at a fair fixed price.",
     "cta": "Where to?",
     "scaffoldNotice": "Foundations in place — features ship branch by branch."
+  },
+  "Auth": {
+    "phone": {
+      "title": "Welcome to VORA",
+      "subtitle": "Enter your phone number to continue.",
+      "roleRider": "Rider",
+      "roleDriver": "Driver",
+      "phoneLabel": "Phone number",
+      "continue": "Continue",
+      "sending": "Sending…",
+      "errorInvalid": "Enter a valid 9-digit phone number"
+    },
+    "otp": {
+      "title": "Enter the code",
+      "subtitle": "We sent a 6-digit code to {phone}",
+      "devHint": "Dev mode — your code is",
+      "verify": "Verify",
+      "verifying": "Verifying…",
+      "changeNumber": "Change number",
+      "resend": "Resend code",
+      "errorInvalid": "Incorrect or expired code"
+    },
+    "session": {
+      "loggedInAs": "Logged in as {phone}",
+      "rider": "Rider",
+      "driver": "Driver",
+      "logout": "Log out"
+    }
   }
 }
