@@ -1,0 +1,248 @@
+// VORA data model — see docs/VORA-BUILD.md §6
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
+}
+
+enum Role {
+  RIDER
+  DRIVER
+  ADMIN
+}
+
+enum RideType {
+  MOTO
+  TAXI
+  SHARED
+  COMFORT
+}
+
+enum RideStatus {
+  REQUESTED
+  SEARCHING
+  ACCEPTED
+  ARRIVING
+  ARRIVED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  MOMO_MTN
+  MOMO_ORANGE
+  WALLET
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+}
+
+enum City {
+  YAOUNDE
+  DOUALA
+}
+
+enum LandmarkCategory {
+  CARREFOUR
+  MARKET
+  LANDMARK
+  QUARTIER
+  STOP
+}
+
+enum SafetyEventType {
+  SOS
+  ROUTE_DEVIATION
+  SHARE_STARTED
+}
+
+enum WalletTransactionType {
+  TOPUP
+  RIDE
+  REFUND
+}
+
+model User {
+  id               String   @id @default(cuid())
+  phone            String   @unique
+  name             String?
+  role             Role     @default(RIDER)
+  language         String   @default("fr")
+  avatarUrl        String?
+  walletBalanceXaf Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  driverProfile      DriverProfile?
+  savedPlaces        SavedPlace[]
+  walletTransactions WalletTransaction[]
+  ridesAsRider       Ride[]               @relation("RiderRides")
+  ridesAsDriver      Ride[]               @relation("DriverRides")
+  ratingsGiven       Rating[]             @relation("RatingsFrom")
+  ratingsReceived    Rating[]             @relation("RatingsTo")
+
+  @@map("users")
+}
+
+model DriverProfile {
+  userId          String              @id
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rideTypes       RideType[]
+  plateNumber     String
+  vehicleModel    String
+  color           String
+  verification    VerificationStatus  @default(UNVERIFIED)
+  helmetProvided  Boolean             @default(false)
+  ratingAvg       Float               @default(0)
+  ratingCount     Int                 @default(0)
+  isOnline        Boolean             @default(false)
+  currentLat      Float?
+  currentLng      Float?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@map("driver_profiles")
+}
+
+model Ride {
+  id              String        @id @default(cuid())
+  riderId         String
+  rider           User          @relation("RiderRides", fields: [riderId], references: [id])
+  driverId        String?
+  driver          User?         @relation("DriverRides", fields: [driverId], references: [id])
+  rideType        RideType
+  status          RideStatus    @default(REQUESTED)
+  pickupLat       Float
+  pickupLng       Float
+  pickupLabel     String
+  dropoffLat      Float
+  dropoffLng      Float
+  dropoffLabel    String
+  distanceM       Int
+  durationS       Int
+  fareXaf         Int
+  surgeMultiplier Float         @default(1.0)
+  paymentMethod   PaymentMethod @default(CASH)
+  startPin        String
+  sharedGroupId   String?
+  timeline        Json          @default("[]")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  payment      Payment?
+  safetyEvents SafetyEvent[]
+  ratings      Rating[]
+
+  @@map("rides")
+}
+
+model FareQuote {
+  id         String   @id @default(cuid())
+  rideType   RideType
+  distanceM  Int
+  durationS  Int
+  baseXaf    Int
+  perKmXaf   Int
+  perMinXaf  Int
+  surge      Float
+  totalXaf   Int
+  createdAt  DateTime @default(now())
+
+  @@map("fare_quotes")
+}
+
+model Payment {
+  id          String        @id @default(cuid())
+  rideId      String        @unique
+  ride        Ride          @relation(fields: [rideId], references: [id])
+  method      PaymentMethod
+  status      PaymentStatus @default(PENDING)
+  providerRef String?
+  amountXaf   Int
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("payments")
+}
+
+model WalletTransaction {
+  id        String                @id @default(cuid())
+  userId    String
+  user      User                  @relation(fields: [userId], references: [id])
+  type      WalletTransactionType
+  amountXaf Int
+  ref       String?
+  createdAt DateTime              @default(now())
+
+  @@map("wallet_transactions")
+}
+
+model SavedPlace {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  label        String
+  lat          Float
+  lng          Float
+  landmarkText String?
+  createdAt    DateTime @default(now())
+
+  @@map("saved_places")
+}
+
+model Landmark {
+  id        String           @id @default(cuid())
+  name      String
+  aliases   String[]
+  quartier  String
+  city      City
+  lat       Float
+  lng       Float
+  category  LandmarkCategory
+  createdAt DateTime         @default(now())
+
+  @@map("landmarks")
+}
+
+model SafetyEvent {
+  id        String          @id @default(cuid())
+  rideId    String
+  ride      Ride            @relation(fields: [rideId], references: [id])
+  type      SafetyEventType
+  lat       Float
+  lng       Float
+  createdAt DateTime        @default(now())
+
+  @@map("safety_events")
+}
+
+model Rating {
+  id         String   @id @default(cuid())
+  rideId     String
+  ride       Ride     @relation(fields: [rideId], references: [id])
+  fromUserId String
+  fromUser   User     @relation("RatingsFrom", fields: [fromUserId], references: [id])
+  toUserId   String
+  toUser     User     @relation("RatingsTo", fields: [toUserId], references: [id])
+  stars      Int
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  @@map("ratings")
+}

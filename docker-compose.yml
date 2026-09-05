@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: vora-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: vora
+      POSTGRES_PASSWORD: vora
+      POSTGRES_DB: vora
+    ports:
+      - "5432:5432"
+    volumes:
+      - vora-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  vora-postgres-data:
