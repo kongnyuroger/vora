@@ -66,5 +66,45 @@
     "perMin": "Durée",
     "surge": "Tarif heure de pointe",
     "total": "Total"
+  },
+  "Ride": {
+    "book": "Réserver",
+    "booking": "Réservation…",
+    "bookingFailed": "Impossible de réserver cette course — réessayez",
+    "noDriversFound": "Aucun chauffeur à proximité pour le moment — réessayez bientôt",
+    "searchingTitle": "Recherche d'un chauffeur…",
+    "searchingNear": "Près de {pickup}",
+    "cancel": "Annuler",
+    "fare": "Prix",
+    "pin": "Code PIN",
+    "verified": "Vérifié",
+    "driverFallbackName": "Votre chauffeur",
+    "done": "Réserver une autre course",
+    "ok": "Ok",
+    "arrivedButton": "Je suis arrivé",
+    "startTripButton": "Démarrer la course",
+    "completeTripButton": "Terminer la course",
+    "status": {
+      "REQUESTED": "Demande en cours…",
+      "SEARCHING": "Recherche d'un chauffeur…",
+      "ACCEPTED": "Le chauffeur arrive",
+      "ARRIVING": "Le chauffeur arrive",
+      "ARRIVED": "Votre chauffeur est arrivé",
+      "IN_PROGRESS": "Course en cours",
+      "COMPLETED": "Course terminée",
+      "CANCELLED": "Course annulée"
+    }
+  },
+  "Driver": {
+    "goOnline": "Se connecter",
+    "goOffline": "Se déconnecter",
+    "onlineStatus": "Vous êtes en ligne",
+    "offlineStatus": "Vous êtes hors ligne",
+    "goOnlinePrompt": "Connectez-vous pour recevoir des demandes de course",
+    "waitingForRequests": "En attente de demandes de course…",
+    "locationRequired": "Activez la position pour vous connecter",
+    "incomingRequestTitle": "Nouvelle demande de course",
+    "accept": "Accepter",
+    "decline": "Refuser"
   }
 }

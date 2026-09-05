@@ -66,5 +66,45 @@
     "perMin": "Time",
     "surge": "Peak pricing",
     "total": "Total"
+  },
+  "Ride": {
+    "book": "Book",
+    "booking": "Booking…",
+    "bookingFailed": "Couldn't book this ride — try again",
+    "noDriversFound": "No drivers nearby right now — try again shortly",
+    "searchingTitle": "Looking for a driver…",
+    "searchingNear": "Near {pickup}",
+    "cancel": "Cancel",
+    "fare": "Fare",
+    "pin": "Trip PIN",
+    "verified": "Verified",
+    "driverFallbackName": "Your driver",
+    "done": "Book another ride",
+    "ok": "Ok",
+    "arrivedButton": "I've arrived",
+    "startTripButton": "Start trip",
+    "completeTripButton": "Complete trip",
+    "status": {
+      "REQUESTED": "Requesting…",
+      "SEARCHING": "Looking for a driver…",
+      "ACCEPTED": "Driver is on the way",
+      "ARRIVING": "Driver is on the way",
+      "ARRIVED": "Your driver has arrived",
+      "IN_PROGRESS": "Trip in progress",
+      "COMPLETED": "Trip completed",
+      "CANCELLED": "Ride cancelled"
+    }
+  },
+  "Driver": {
+    "goOnline": "Go online",
+    "goOffline": "Go offline",
+    "onlineStatus": "You're online",
+    "offlineStatus": "You're offline",
+    "goOnlinePrompt": "Go online to start receiving ride requests",
+    "waitingForRequests": "Waiting for ride requests…",
+    "locationRequired": "Enable location access to go online",
+    "incomingRequestTitle": "New ride request",
+    "accept": "Accept",
+    "decline": "Decline"
   }
 }

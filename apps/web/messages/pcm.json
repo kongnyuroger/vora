@@ -66,5 +66,45 @@
     "perMin": "Time",
     "surge": "Peak time price",
     "total": "Total"
+  },
+  "Ride": {
+    "book": "Book am",
+    "booking": "E dey book…",
+    "bookingFailed": "We no fit book dis ride — try again",
+    "noDriversFound": "No driver dey near now — try again small time",
+    "searchingTitle": "E dey find driver…",
+    "searchingNear": "Near {pickup}",
+    "cancel": "Cancel",
+    "fare": "Price",
+    "pin": "Trip PIN",
+    "verified": "Verified",
+    "driverFallbackName": "Your driver",
+    "done": "Book another ride",
+    "ok": "Ok",
+    "arrivedButton": "I don reach",
+    "startTripButton": "Start di trip",
+    "completeTripButton": "Complete di trip",
+    "status": {
+      "REQUESTED": "E dey request…",
+      "SEARCHING": "E dey find driver…",
+      "ACCEPTED": "Driver dey come",
+      "ARRIVING": "Driver dey come",
+      "ARRIVED": "Your driver don reach",
+      "IN_PROGRESS": "Trip dey go",
+      "COMPLETED": "Trip don finish",
+      "CANCELLED": "Ride don cancel"
+    }
+  },
+  "Driver": {
+    "goOnline": "Go online",
+    "goOffline": "Go offline",
+    "onlineStatus": "You dey online",
+    "offlineStatus": "You dey offline",
+    "goOnlinePrompt": "Go online make you start dey receive ride requests",
+    "waitingForRequests": "E dey wait for ride requests…",
+    "locationRequired": "Turn on location make you go online",
+    "incomingRequestTitle": "New ride request",
+    "accept": "Accept",
+    "decline": "Decline"
   }
 }

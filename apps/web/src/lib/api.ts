@@ -1,9 +1,12 @@
 import type {
   AuthSession,
+  CreateRideRequest,
+  CreateRideResponse,
   FareQuoteResponse,
   LandmarkSearchResult,
   RequestOtpPayload,
   RequestOtpResponse,
+  RideDetail,
   User,
   VerifyOtpPayload,
 } from "@vora/shared";
@@ -85,4 +88,16 @@ export function getFareQuote(payload: {
     method: "POST",
     body: JSON.stringify(payload),
   });
+}
+
+export function createRide(payload: CreateRideRequest, token: string) {
+  return apiFetch<CreateRideResponse>("/rides", {
+    method: "POST",
+    token,
+    body: JSON.stringify(payload),
+  });
+}
+
+export function getRide(rideId: string, token: string) {
+  return apiFetch<RideDetail>(`/rides/${rideId}`, { token });
 }
