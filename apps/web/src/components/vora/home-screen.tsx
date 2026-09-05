@@ -5,7 +5,6 @@ import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { Locate, LogOut, Search, ShieldCheck } from "lucide-react";
 import { Role, type LandmarkSearchResult } from "@vora/shared";
-import { Button } from "@/components/ui/button";
 import { BottomSheet, type SheetSnap } from "@/components/vora/bottom-sheet";
 import { LandmarkSearch } from "@/components/vora/map/landmark-search";
 import type { MapCanvasHandle } from "@/components/vora/map/map-canvas";
@@ -169,16 +168,10 @@ export function HomeScreen({ copy }: { copy: HomeScreenCopy }) {
             </p>
           )}
 
-          {snap === "peek" && (
+          {snap === "peek" && !pickup && (
             <p className="text-caption text-muted-foreground">
               {copy.tagline}
             </p>
-          )}
-
-          {pickup && (
-            <Button size="cta" className="w-full">
-              {copy.cta}
-            </Button>
           )}
         </div>
       </BottomSheet>
