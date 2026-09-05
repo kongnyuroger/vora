@@ -84,6 +84,19 @@ export interface FareQuote {
   breakdown: FareBreakdown;
 }
 
+export interface RouteGeometry {
+  type: "LineString";
+  /** [lng, lat] pairs, in Mapbox/GeoJSON order. */
+  coordinates: [number, number][];
+}
+
+export interface FareQuoteResponse {
+  distanceM: number;
+  durationS: number;
+  route: RouteGeometry;
+  quotes: FareQuote[];
+}
+
 export interface Payment {
   id: string;
   rideId: string;

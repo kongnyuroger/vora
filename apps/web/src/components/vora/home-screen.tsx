@@ -2,16 +2,19 @@
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { Locate, LogOut, Search, ShieldCheck } from "lucide-react";
-import { Role, type LandmarkSearchResult } from "@vora/shared";
+import { Flag, Locate, LogOut, Search, ShieldCheck } from "lucide-react";
+import { RideType, Role, type LandmarkSearchResult } from "@vora/shared";
 import { BottomSheet, type SheetSnap } from "@/components/vora/bottom-sheet";
 import { LandmarkSearch } from "@/components/vora/map/landmark-search";
 import type { MapCanvasHandle } from "@/components/vora/map/map-canvas";
+import { RideTypeCarousel } from "@/components/vora/ride/ride-type-carousel";
 import { Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
 import { useAuthStore } from "@/stores/auth-store";
 import { useGeolocation } from "@/hooks/use-geolocation";
+import { getFareQuote } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 const MapCanvas = dynamic(
@@ -35,8 +38,13 @@ const LOCALES: { code: AppLocale; label: string }[] = [
 export function HomeScreen({ copy }: { copy: HomeScreenCopy }) {
   const tSession = useTranslations("Auth.session");
   const tMap = useTranslations("Map");
+  const tFare = useTranslations("Fare");
   const [snap, setSnap] = useState<SheetSnap>("peek");
   const [pickup, setPickup] = useState<LandmarkSearchResult | null>(null);
+  const [dropoff, setDropoff] = useState<LandmarkSearchResult | null>(null);
+  const [selectedRideType, setSelectedRideType] = useState<RideType>(
+    RideType.MOTO,
+  );
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
 
@@ -51,20 +59,64 @@ export function HomeScreen({ copy }: { copy: HomeScreenCopy }) {
     }
   }, [userPosition]);
 
+  const {
+    data: fareQuote,
+    isFetching: isQuoting,
+    isError: isQuoteError,
+  } = useQuery({
+    queryKey: [
+      "fareQuote",
+      pickup?.lat,
+      pickup?.lng,
+      dropoff?.lat,
+      dropoff?.lng,
+    ],
+    queryFn: () =>
+      getFareQuote({
+        pickupLat: pickup!.lat,
+        pickupLng: pickup!.lng,
+        dropoffLat: dropoff!.lat,
+        dropoffLng: dropoff!.lng,
+      }),
+    enabled: !!pickup && !!dropoff,
+  });
+
+  useEffect(() => {
+    if (fareQuote) {
+      mapRef.current?.setRoute(fareQuote.route);
+      mapRef.current?.fitToRoute(fareQuote.route);
+    }
+  }, [fareQuote]);
+
   const roleLabel =
     user?.role === Role.DRIVER ? tSession("driver") : tSession("rider");
 
-  const handleSelectLandmark = (result: LandmarkSearchResult) => {
+  const handleSelectPickup = (result: LandmarkSearchResult) => {
     setPickup(result);
     mapRef.current?.setPickup({ lat: result.lat, lng: result.lng });
     mapRef.current?.flyTo(result.lat, result.lng, 15);
     setSnap("half");
   };
 
+  const handleSelectDropoff = (result: LandmarkSearchResult) => {
+    setDropoff(result);
+    mapRef.current?.setDropoff({ lat: result.lat, lng: result.lng });
+    setSnap("half");
+  };
+
   const clearPickup = () => {
     setPickup(null);
+    setDropoff(null);
     mapRef.current?.setPickup(null);
+    mapRef.current?.setDropoff(null);
+    mapRef.current?.setRoute(null);
     setSnap("full");
+  };
+
+  const clearDropoff = () => {
+    setDropoff(null);
+    mapRef.current?.setDropoff(null);
+    mapRef.current?.setRoute(null);
   };
 
   return (
@@ -158,7 +210,58 @@ export function HomeScreen({ copy }: { copy: HomeScreenCopy }) {
           ) : (
             <LandmarkSearch
               proximity={userPosition ?? undefined}
-              onSelect={handleSelectLandmark}
+              onSelect={handleSelectPickup}
+            />
+          )}
+
+          {pickup && dropoff && (
+            <div className="flex items-center gap-3 rounded-card border border-border bg-secondary px-4 py-3.5 shadow-vora-soft">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-vora-green-100">
+                <Flag className="size-4 text-vora-green-700" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-caption text-secondary-foreground/70">
+                  {tMap("dropoffLabel")}
+                </span>
+                <span className="block truncate text-body font-medium text-secondary-foreground">
+                  {dropoff.name}
+                </span>
+              </span>
+              <button
+                type="button"
+                onClick={clearDropoff}
+                className="shrink-0 rounded-full px-3 py-1.5 text-caption font-medium text-vora-green"
+              >
+                {tMap("change")}
+              </button>
+            </div>
+          )}
+
+          {pickup && !dropoff && (
+            <LandmarkSearch
+              proximity={pickup}
+              placeholder={tMap("destinationPlaceholder")}
+              onSelect={handleSelectDropoff}
+            />
+          )}
+
+          {pickup && dropoff && isQuoting && (
+            <p className="text-caption text-muted-foreground">
+              {tFare("loadingQuote")}
+            </p>
+          )}
+
+          {pickup && dropoff && isQuoteError && (
+            <p className="text-caption text-destructive">
+              {tFare("quoteError")}
+            </p>
+          )}
+
+          {pickup && dropoff && fareQuote && (
+            <RideTypeCarousel
+              quotes={fareQuote.quotes}
+              selected={selectedRideType}
+              onSelect={setSelectedRideType}
             />
           )}
 

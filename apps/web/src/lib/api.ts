@@ -1,5 +1,6 @@
 import type {
   AuthSession,
+  FareQuoteResponse,
   LandmarkSearchResult,
   RequestOtpPayload,
   RequestOtpResponse,
@@ -72,4 +73,16 @@ export function searchLandmarks(
     params.set("lng", String(proximity.lng));
   }
   return apiFetch<LandmarkSearchResult[]>(`/landmarks/search?${params}`);
+}
+
+export function getFareQuote(payload: {
+  pickupLat: number;
+  pickupLng: number;
+  dropoffLat: number;
+  dropoffLng: number;
+}) {
+  return apiFetch<FareQuoteResponse>("/fares/quote", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }

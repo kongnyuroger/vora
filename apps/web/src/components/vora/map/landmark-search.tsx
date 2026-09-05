@@ -13,6 +13,7 @@ interface LandmarkSearchProps {
   proximity?: { lat: number; lng: number };
   onSelect: (result: LandmarkSearchResult) => void;
   onFocus?: () => void;
+  placeholder?: string;
 }
 
 function ResultIcon({ result }: { result: LandmarkSearchResult }) {
@@ -29,6 +30,7 @@ export function LandmarkSearch({
   proximity,
   onSelect,
   onFocus,
+  placeholder,
 }: LandmarkSearchProps) {
   const t = useTranslations("Map");
   const [query, setQuery] = useState("");
@@ -49,7 +51,7 @@ export function LandmarkSearch({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={onFocus}
-          placeholder={t("searchPlaceholder")}
+          placeholder={placeholder ?? t("searchPlaceholder")}
           className="w-full bg-transparent text-body font-medium text-secondary-foreground outline-none placeholder:text-secondary-foreground/60"
         />
         {query && (

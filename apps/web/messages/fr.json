@@ -35,13 +35,36 @@
   },
   "Map": {
     "searchPlaceholder": "Cherchez un point de repère (ex. Carrefour Biyem-Assi)",
+    "destinationPlaceholder": "Où allez-vous ?",
     "searching": "Recherche…",
     "noResults": "Aucun résultat — essayez une autre orthographe",
     "clear": "Effacer",
     "pickupLabel": "Départ",
+    "dropoffLabel": "Destination",
     "change": "Changer",
     "useMyLocation": "Utiliser ma position",
     "locating": "Localisation…",
     "locationDenied": "Accès à la position refusé — activez-le dans les réglages du navigateur"
+  },
+  "RideTypes": {
+    "heading": "Choisissez une course",
+    "moto": "Moto",
+    "motoDesc": "Rapide et abordable",
+    "taxi": "Taxi",
+    "taxiDesc": "Berline confortable",
+    "shared": "Ensemble",
+    "sharedDesc": "Partagez et économisez",
+    "comfort": "Comfort",
+    "comfortDesc": "Course premium"
+  },
+  "Fare": {
+    "loadingQuote": "Calcul du prix…",
+    "quoteError": "Impossible d'obtenir un prix — vérifiez votre connexion",
+    "breakdown": "Détail du prix",
+    "base": "Prix de base",
+    "perKm": "Distance",
+    "perMin": "Durée",
+    "surge": "Tarif heure de pointe",
+    "total": "Total"
   }
 }

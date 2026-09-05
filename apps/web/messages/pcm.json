@@ -35,13 +35,36 @@
   },
   "Map": {
     "searchPlaceholder": "Search landmark (e.g. Carrefour Biyem-Assi)",
+    "destinationPlaceholder": "Where you dey go?",
     "searching": "E dey search…",
     "noResults": "No result — try another spelling",
     "clear": "Clear",
     "pickupLabel": "Pickup",
+    "dropoffLabel": "Destination",
     "change": "Change",
     "useMyLocation": "Use my location",
     "locating": "E dey locate…",
     "locationDenied": "Location access no work — turn am on for your browser settings"
+  },
+  "RideTypes": {
+    "heading": "Choose your ride",
+    "moto": "Moto",
+    "motoDesc": "Quick and cheap",
+    "taxi": "Taxi",
+    "taxiDesc": "Comfortable car",
+    "shared": "Ensemble",
+    "sharedDesc": "Share am, save money",
+    "comfort": "Comfort",
+    "comfortDesc": "Premium ride"
+  },
+  "Fare": {
+    "loadingQuote": "E dey calculate price…",
+    "quoteError": "We no fit get price — check your connection",
+    "breakdown": "Price breakdown",
+    "base": "Base price",
+    "perKm": "Distance",
+    "perMin": "Time",
+    "surge": "Peak time price",
+    "total": "Total"
   }
 }
