@@ -19,7 +19,10 @@ const RIDE_TYPE_ORDER = [
 export class FaresService {
   constructor(private readonly routing: RoutingService) {}
 
-  async quote(pickup: RoutePoint, dropoff: RoutePoint): Promise<FareQuoteResponse> {
+  async quote(
+    pickup: RoutePoint,
+    dropoff: RoutePoint,
+  ): Promise<FareQuoteResponse> {
     const route = await this.routing.getRoute(pickup, dropoff);
     const surge = currentSurge();
 

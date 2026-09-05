@@ -80,7 +80,9 @@ export class RoutingService {
 
   private getFallbackRoute(pickup: RoutePoint, dropoff: RoutePoint): Route {
     const distanceM = Math.round(this.haversineM(pickup, dropoff));
-    const durationS = Math.round((distanceM / 1000 / FALLBACK_SPEED_KMH) * 3600);
+    const durationS = Math.round(
+      (distanceM / 1000 / FALLBACK_SPEED_KMH) * 3600,
+    );
 
     return {
       distanceM,
