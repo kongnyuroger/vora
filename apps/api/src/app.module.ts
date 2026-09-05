@@ -7,6 +7,7 @@ import { FaresModule } from './fares/fares.module';
 import { HealthModule } from './health/health.module';
 import { LandmarksModule } from './landmarks/landmarks.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { RidesModule } from './rides/rides.module';
 import { RoutingModule } from './routing/routing.module';
 
 @Module({
@@ -18,6 +19,7 @@ import { RoutingModule } from './routing/routing.module';
     LandmarksModule,
     RoutingModule,
     FaresModule,
+    RidesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

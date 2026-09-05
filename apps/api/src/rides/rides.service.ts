@@ -30,8 +30,6 @@ const RIDE_INCLUDE = {
   driver: { include: { driverProfile: true } },
 } satisfies Prisma.RideInclude;
 
-type RideWithDriver = Prisma.RideGetPayload<{ include: typeof RIDE_INCLUDE }>;
-
 interface DriverCandidate {
   userId: string;
   distanceM: number;
@@ -71,7 +69,7 @@ export class RidesService {
     const created = await this.prisma.ride.create({
       data: {
         riderId,
-        rideType: dto.rideType as unknown as DbRideType,
+        rideType: dto.rideType,
         status: DbRideStatus.SEARCHING,
         pickupLat: dto.pickupLat,
         pickupLng: dto.pickupLng,
@@ -83,8 +81,7 @@ export class RidesService {
         durationS: forType.durationS,
         fareXaf: forType.breakdown.totalXaf,
         surgeMultiplier: forType.breakdown.surge,
-        paymentMethod:
-          dto.paymentMethod as unknown as Prisma.RideCreateInput['paymentMethod'],
+        paymentMethod: dto.paymentMethod,
         startPin,
         timeline: timeline as unknown as Prisma.InputJsonValue,
       },
@@ -255,13 +252,13 @@ export class RidesService {
     const updated = await this.prisma.ride.update({
       where: { id: rideId },
       data: {
-        status: finalStatus as unknown as DbRideStatus,
+        status: finalStatus,
         timeline: timeline as unknown as Prisma.InputJsonValue,
       },
       include: RIDE_INCLUDE,
     });
 
-    return toRideDetail(updated as RideWithDriver);
+    return toRideDetail(updated);
   }
 }
 
