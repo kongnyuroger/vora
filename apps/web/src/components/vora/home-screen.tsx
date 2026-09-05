@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { MapPin, Search } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { LogOut, MapPin, Search, ShieldCheck } from "lucide-react";
+import { Role } from "@vora/shared";
 import { Button } from "@/components/ui/button";
 import { BottomSheet, type SheetSnap } from "@/components/vora/bottom-sheet";
 import { Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
+import { useAuthStore } from "@/stores/auth-store";
 
 interface HomeScreenCopy {
   title: string;
@@ -21,14 +24,20 @@ const LOCALES: { code: AppLocale; label: string }[] = [
 ];
 
 export function HomeScreen({ copy }: { copy: HomeScreenCopy }) {
+  const tSession = useTranslations("Auth.session");
   const [snap, setSnap] = useState<SheetSnap>("peek");
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+
+  const roleLabel =
+    user?.role === Role.DRIVER ? tSession("driver") : tSession("rider");
 
   return (
     <main className="relative h-dvh w-full overflow-hidden bg-vora-ink">
       {/* Map-hero placeholder — real Mapbox map lands in Branch 2 */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,var(--vora-green-700),var(--vora-ink)_70%)]" />
 
-      <div className="relative z-10 flex items-center justify-between px-5 pt-6">
+      <div className="relative z-50 flex items-center justify-between px-5 pt-6">
         <span className="font-heading text-h2 font-bold tracking-tight text-white">
           {copy.title}
         </span>
@@ -46,7 +55,27 @@ export function HomeScreen({ copy }: { copy: HomeScreenCopy }) {
         </nav>
       </div>
 
-      <div className="relative z-10 mt-10 px-6">
+      {user && (
+        <div className="relative z-50 mt-4 flex items-center justify-between px-6">
+          <div className="flex items-center gap-1.5 rounded-full bg-white/10 py-1.5 pl-2.5 pr-3 text-caption text-white/85 backdrop-blur-sm">
+            <ShieldCheck className="size-3.5 text-vora-amber" />
+            <span>
+              {tSession("loggedInAs", { phone: user.phone })} · {roleLabel}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={logout}
+            aria-label={tSession("logout")}
+            className="flex items-center gap-1 rounded-full bg-white/10 px-3 py-1.5 text-caption font-medium text-white/85 backdrop-blur-sm transition-colors hover:bg-white/15"
+          >
+            <LogOut className="size-3.5" />
+            {tSession("logout")}
+          </button>
+        </div>
+      )}
+
+      <div className="relative z-10 mt-6 px-6">
         <p className="max-w-xs text-body text-white/85">{copy.tagline}</p>
       </div>
 

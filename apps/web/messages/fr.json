@@ -4,5 +4,33 @@
     "tagline": "Réservez un bendskin, un taxi ou une course partagée par point de repère, à prix fixe et juste.",
     "cta": "Où allez-vous ?",
     "scaffoldNotice": "Fondations en place — les fonctionnalités arrivent branche par branche."
+  },
+  "Auth": {
+    "phone": {
+      "title": "Bienvenue sur VORA",
+      "subtitle": "Entrez votre numéro de téléphone pour continuer.",
+      "roleRider": "Passager",
+      "roleDriver": "Chauffeur",
+      "phoneLabel": "Numéro de téléphone",
+      "continue": "Continuer",
+      "sending": "Envoi…",
+      "errorInvalid": "Entrez un numéro à 9 chiffres valide"
+    },
+    "otp": {
+      "title": "Entrez le code",
+      "subtitle": "Nous avons envoyé un code à 6 chiffres au {phone}",
+      "devHint": "Mode dev — votre code est",
+      "verify": "Vérifier",
+      "verifying": "Vérification…",
+      "changeNumber": "Changer de numéro",
+      "resend": "Renvoyer le code",
+      "errorInvalid": "Code incorrect ou expiré"
+    },
+    "session": {
+      "loggedInAs": "Connecté en tant que {phone}",
+      "rider": "Passager",
+      "driver": "Chauffeur",
+      "logout": "Se déconnecter"
+    }
   }
 }
