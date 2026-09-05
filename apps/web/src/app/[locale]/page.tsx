@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { HomeScreen } from "@/components/vora/home-screen";
+import { AppShell } from "@/components/vora/app-shell";
 import { AuthGate } from "@/components/vora/auth-gate";
 
 export default async function Home() {
@@ -7,7 +7,7 @@ export default async function Home() {
 
   return (
     <AuthGate>
-      <HomeScreen
+      <AppShell
         copy={{
           title: t("title"),
           tagline: t("tagline"),

@@ -7,5 +7,6 @@ import { FaresService } from './fares.service';
   imports: [RoutingModule],
   controllers: [FaresController],
   providers: [FaresService],
+  exports: [FaresService],
 })
 export class FaresModule {}

@@ -17,11 +17,15 @@ const ROUTE_SOURCE_ID = "vora-route";
 const ROUTE_LAYER_ID = "vora-route-line";
 const EMPTY_LINE_STRING: RouteGeometry = { type: "LineString", coordinates: [] };
 
+/** How long a driver marker takes to glide to a newly received location, rather than teleporting. */
+const DRIVER_MOVE_MS = 1000;
+
 export interface MapCanvasHandle {
   flyTo: (lat: number, lng: number, zoom?: number) => void;
   setPickup: (point: { lat: number; lng: number } | null) => void;
   setDropoff: (point: { lat: number; lng: number } | null) => void;
   setUserLocation: (point: { lat: number; lng: number } | null) => void;
+  setDriverLocation: (point: { lat: number; lng: number } | null) => void;
   setRoute: (geometry: RouteGeometry | null) => void;
   fitToRoute: (geometry: RouteGeometry) => void;
 }
@@ -35,6 +39,8 @@ export const MapCanvas = forwardRef<MapCanvasHandle>(function MapCanvas(
   const pickupMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const dropoffMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
+  const driverMarkerRef = useRef<mapboxgl.Marker | null>(null);
+  const driverAnimRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -53,6 +59,7 @@ export const MapCanvas = forwardRef<MapCanvasHandle>(function MapCanvas(
     mapRef.current = map;
 
     return () => {
+      if (driverAnimRef.current) cancelAnimationFrame(driverAnimRef.current);
       map.remove();
       mapRef.current = null;
     };
@@ -177,6 +184,50 @@ export const MapCanvas = forwardRef<MapCanvasHandle>(function MapCanvas(
         userMarkerRef.current.setLngLat([point.lng, point.lat]);
       }
     },
+    setDriverLocation: (point) => {
+      if (!mapRef.current) return;
+
+      if (driverAnimRef.current) {
+        cancelAnimationFrame(driverAnimRef.current);
+        driverAnimRef.current = null;
+      }
+
+      if (!point) {
+        driverMarkerRef.current?.remove();
+        driverMarkerRef.current = null;
+        return;
+      }
+
+      if (!driverMarkerRef.current) {
+        const el = document.createElement("div");
+        el.innerHTML = DRIVER_PIN_SVG;
+        driverMarkerRef.current = new mapboxgl.Marker({
+          element: el,
+          anchor: "center",
+        })
+          .setLngLat([point.lng, point.lat])
+          .addTo(mapRef.current);
+        return;
+      }
+
+      // Glide to the new fix instead of teleporting — GPS updates arrive
+      // sparsely, so this is what makes the marker read as "driving".
+      const marker = driverMarkerRef.current;
+      const from = marker.getLngLat();
+      const to: [number, number] = [point.lng, point.lat];
+      const startTime = performance.now();
+
+      const step = (now: number) => {
+        const t = Math.min(1, (now - startTime) / DRIVER_MOVE_MS);
+        marker.setLngLat([
+          from.lng + (to[0] - from.lng) * t,
+          from.lat + (to[1] - from.lat) * t,
+        ]);
+        driverAnimRef.current = t < 1 ? requestAnimationFrame(step) : null;
+      };
+
+      driverAnimRef.current = requestAnimationFrame(step);
+    },
   }));
 
   return (
@@ -222,5 +273,14 @@ const DROPOFF_PIN_SVG = `
 <svg width="36" height="46" viewBox="0 0 36 46" xmlns="http://www.w3.org/2000/svg">
   <path d="M18 0C8.06 0 0 8.06 0 18c0 13.5 18 28 18 28s18-14.5 18-28C36 8.06 27.94 0 18 0z" fill="#0C7C59"/>
   <circle cx="18" cy="18" r="7" fill="#FFFFFF"/>
+</svg>
+`;
+
+const DRIVER_PIN_SVG = `
+<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="20" cy="20" r="18" fill="#0E1420" stroke="#FFFFFF" stroke-width="3"/>
+  <path d="M13 24.5l1.4-6.2a2 2 0 0 1 1.95-1.55h7.3a2 2 0 0 1 1.95 1.55l1.4 6.2" stroke="#F6A609" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="15.5" cy="24.5" r="1.8" fill="#F6A609"/>
+  <circle cx="24.5" cy="24.5" r="1.8" fill="#F6A609"/>
 </svg>
 `;
