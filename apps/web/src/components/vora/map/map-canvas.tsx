@@ -8,15 +8,22 @@ import {
 } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import type { RouteGeometry } from "@vora/shared";
 
 const YAOUNDE_CENTER: [number, number] = [11.5021, 3.848];
 const DEFAULT_ZOOM = 12;
 const FLY_ZOOM = 15;
+const ROUTE_SOURCE_ID = "vora-route";
+const ROUTE_LAYER_ID = "vora-route-line";
+const EMPTY_LINE_STRING: RouteGeometry = { type: "LineString", coordinates: [] };
 
 export interface MapCanvasHandle {
   flyTo: (lat: number, lng: number, zoom?: number) => void;
   setPickup: (point: { lat: number; lng: number } | null) => void;
+  setDropoff: (point: { lat: number; lng: number } | null) => void;
   setUserLocation: (point: { lat: number; lng: number } | null) => void;
+  setRoute: (geometry: RouteGeometry | null) => void;
+  fitToRoute: (geometry: RouteGeometry) => void;
 }
 
 export const MapCanvas = forwardRef<MapCanvasHandle>(function MapCanvas(
@@ -26,6 +33,7 @@ export const MapCanvas = forwardRef<MapCanvasHandle>(function MapCanvas(
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const pickupMarkerRef = useRef<mapboxgl.Marker | null>(null);
+  const dropoffMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
 
   useEffect(() => {
@@ -49,6 +57,42 @@ export const MapCanvas = forwardRef<MapCanvasHandle>(function MapCanvas(
       mapRef.current = null;
     };
   }, []);
+
+  const applyRoute = (geometry: RouteGeometry) => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    const data: GeoJSON.Feature<GeoJSON.LineString> = {
+      type: "Feature",
+      properties: {},
+      geometry,
+    };
+
+    const source = map.getSource(ROUTE_SOURCE_ID) as
+      | mapboxgl.GeoJSONSource
+      | undefined;
+
+    if (source) {
+      source.setData(data);
+      return;
+    }
+
+    map.addSource(ROUTE_SOURCE_ID, { type: "geojson", data });
+    map.addLayer({
+      id: ROUTE_LAYER_ID,
+      type: "line",
+      source: ROUTE_SOURCE_ID,
+      layout: { "line-cap": "round", "line-join": "round" },
+      paint: { "line-color": "#0C7C59", "line-width": 4 },
+    });
+  };
+
+  const withLoadedMap = (fn: () => void) => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (map.isStyleLoaded()) fn();
+    else map.once("load", fn);
+  };
 
   useImperativeHandle(ref, () => ({
     flyTo: (lat, lng, zoom = FLY_ZOOM) => {
@@ -75,6 +119,44 @@ export const MapCanvas = forwardRef<MapCanvasHandle>(function MapCanvas(
       } else {
         pickupMarkerRef.current.setLngLat([point.lng, point.lat]);
       }
+    },
+    setDropoff: (point) => {
+      if (!mapRef.current) return;
+
+      if (!point) {
+        dropoffMarkerRef.current?.remove();
+        dropoffMarkerRef.current = null;
+        return;
+      }
+
+      if (!dropoffMarkerRef.current) {
+        const el = document.createElement("div");
+        el.innerHTML = DROPOFF_PIN_SVG;
+        dropoffMarkerRef.current = new mapboxgl.Marker({
+          element: el,
+          anchor: "bottom",
+        })
+          .setLngLat([point.lng, point.lat])
+          .addTo(mapRef.current);
+      } else {
+        dropoffMarkerRef.current.setLngLat([point.lng, point.lat]);
+      }
+    },
+    setRoute: (geometry) => {
+      withLoadedMap(() => applyRoute(geometry ?? EMPTY_LINE_STRING));
+    },
+    fitToRoute: (geometry) => {
+      if (geometry.coordinates.length === 0) return;
+      withLoadedMap(() => {
+        const bounds = geometry.coordinates.reduce(
+          (b, [lng, lat]) => b.extend([lng, lat]),
+          new mapboxgl.LngLatBounds(
+            geometry.coordinates[0],
+            geometry.coordinates[0],
+          ),
+        );
+        mapRef.current?.fitBounds(bounds, { padding: 64, maxZoom: 16 });
+      });
     },
     setUserLocation: (point) => {
       if (!mapRef.current) return;
@@ -133,5 +215,12 @@ const PICKUP_PIN_SVG = `
 <svg width="36" height="46" viewBox="0 0 36 46" xmlns="http://www.w3.org/2000/svg">
   <path d="M18 0C8.06 0 0 8.06 0 18c0 13.5 18 28 18 28s18-14.5 18-28C36 8.06 27.94 0 18 0z" fill="#F6A609"/>
   <circle cx="18" cy="18" r="7" fill="#0E1420"/>
+</svg>
+`;
+
+const DROPOFF_PIN_SVG = `
+<svg width="36" height="46" viewBox="0 0 36 46" xmlns="http://www.w3.org/2000/svg">
+  <path d="M18 0C8.06 0 0 8.06 0 18c0 13.5 18 28 18 28s18-14.5 18-28C36 8.06 27.94 0 18 0z" fill="#0C7C59"/>
+  <circle cx="18" cy="18" r="7" fill="#FFFFFF"/>
 </svg>
 `;
