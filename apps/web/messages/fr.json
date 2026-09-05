@@ -32,5 +32,16 @@
       "driver": "Chauffeur",
       "logout": "Se déconnecter"
     }
+  },
+  "Map": {
+    "searchPlaceholder": "Cherchez un point de repère (ex. Carrefour Biyem-Assi)",
+    "searching": "Recherche…",
+    "noResults": "Aucun résultat — essayez une autre orthographe",
+    "clear": "Effacer",
+    "pickupLabel": "Départ",
+    "change": "Changer",
+    "useMyLocation": "Utiliser ma position",
+    "locating": "Localisation…",
+    "locationDenied": "Accès à la position refusé — activez-le dans les réglages du navigateur"
   }
 }
