@@ -49,14 +49,14 @@ export class SimulatedMomoProvider implements PaymentProvider {
     return Promise.resolve({ reference, status: PaymentStatus.PENDING });
   }
 
+  /** Idempotent, like a real provider's transaction lookup: both the rider and
+   * the driver may poll the same charge, and each must get the same answer. */
   getStatus(reference: string): Promise<PaymentStatus> {
     const charge = this.charges.get(reference);
     if (!charge) return Promise.resolve(PaymentStatus.FAILED);
-    if (Date.now() < charge.settlesAt) {
-      return Promise.resolve(PaymentStatus.PENDING);
-    }
 
-    this.charges.delete(reference);
-    return Promise.resolve(charge.outcome);
+    return Promise.resolve(
+      Date.now() < charge.settlesAt ? PaymentStatus.PENDING : charge.outcome,
+    );
   }
 }

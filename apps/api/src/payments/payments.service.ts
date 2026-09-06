@@ -112,15 +112,22 @@ export class PaymentsService {
     );
     if (status === PaymentStatus.PENDING) return toPaymentView(payment);
 
-    const updated = await this.prisma.payment.update({
-      where: { id: payment.id },
+    // Rider and driver both poll the same charge, so the write is conditional on
+    // the row still being PENDING — whoever loses the race must not be able to
+    // stamp a stale answer over an already-settled payment.
+    await this.prisma.payment.updateMany({
+      where: { id: payment.id, status: DbPaymentStatus.PENDING },
       data: {
-        status: status,
+        status,
         failureReason:
           status === PaymentStatus.FAILED ? MOMO_DECLINED_REASON : null,
       },
     });
-    return toPaymentView(updated);
+
+    const settled = await this.prisma.payment.findUniqueOrThrow({
+      where: { id: payment.id },
+    });
+    return toPaymentView(settled);
   }
 
   /** Settles pending top-ups first, so the balance reflects anything just approved. */
