@@ -50,7 +50,7 @@ export class AuthService {
   }
 
   async verifyOtp(dto: VerifyOtpDto): Promise<AuthSession> {
-    const { valid, role } = this.otpStore.verify(dto.phone, dto.otp);
+    const { valid, role } = this.otpStore.check(dto.phone, dto.otp);
     if (!valid) {
       throw new UnauthorizedException('Invalid or expired code');
     }
@@ -60,6 +60,11 @@ export class AuthService {
       update: {},
       create: { phone: dto.phone, role: role ?? Role.RIDER },
     });
+
+    // Only burn the code once login has actually succeeded — a
+    // transient failure below (e.g. the database being unreachable)
+    // must not invalidate an otherwise-correct code.
+    this.otpStore.consume(dto.phone);
 
     const accessToken = await this.signToken(user.id, user.phone, user.role);
     return { accessToken, user: toPublicUser(user) };

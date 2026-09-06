@@ -20,7 +20,12 @@ export class OtpStore {
     this.store.set(phone, { code, expiresAt: Date.now() + ttlMs, role });
   }
 
-  verify(phone: string, code: string): { valid: boolean; role?: Role } {
+  /**
+   * Checks the code without consuming it, so a downstream failure (e.g.
+   * the database being unreachable) doesn't burn an otherwise-valid code
+   * before the caller has actually finished logging the user in.
+   */
+  check(phone: string, code: string): { valid: boolean; role?: Role } {
     const entry = this.store.get(phone);
     if (!entry) return { valid: false };
 
@@ -31,7 +36,11 @@ export class OtpStore {
 
     if (entry.code !== code) return { valid: false };
 
-    this.store.delete(phone);
     return { valid: true, role: entry.role };
+  }
+
+  /** Call once the login this code was for has actually succeeded. */
+  consume(phone: string) {
+    this.store.delete(phone);
   }
 }

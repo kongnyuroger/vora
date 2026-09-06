@@ -6,11 +6,13 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+export type OtpErrorKind = "invalid" | "generic" | null;
+
 interface OtpScreenProps {
   phone: string;
   devOtp?: string;
   isPending: boolean;
-  hasError: boolean;
+  errorKind: OtpErrorKind;
   onBack: () => void;
   onResend: () => void;
   onSubmit: (otp: string) => void;
@@ -22,7 +24,7 @@ export function OtpScreen({
   phone,
   devOtp,
   isPending,
-  hasError,
+  errorKind,
   onBack,
   onResend,
   onSubmit,
@@ -107,15 +109,15 @@ export function OtpScreen({
               onPaste={handlePaste}
               className={cn(
                 "size-12 rounded-card border border-border bg-background text-center text-h3 font-semibold text-foreground outline-none focus:border-ring",
-                hasError && "border-destructive",
+                errorKind && "border-destructive",
               )}
             />
           ))}
         </div>
 
-        {hasError && (
+        {errorKind && (
           <p className="mt-3 text-caption text-destructive">
-            {t("errorInvalid")}
+            {errorKind === "invalid" ? t("errorInvalid") : t("errorGeneric")}
           </p>
         )}
 
