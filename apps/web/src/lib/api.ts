@@ -4,6 +4,7 @@ import type {
   CreateRideResponse,
   FareQuoteResponse,
   LandmarkSearchResult,
+  PublicRideView,
   RequestOtpPayload,
   RequestOtpResponse,
   RideDetail,
@@ -100,4 +101,8 @@ export function createRide(payload: CreateRideRequest, token: string) {
 
 export function getRide(rideId: string, token: string) {
   return apiFetch<RideDetail>(`/rides/${rideId}`, { token });
+}
+
+export function getPublicRide(rideId: string) {
+  return apiFetch<PublicRideView>(`/rides/${rideId}/public`);
 }

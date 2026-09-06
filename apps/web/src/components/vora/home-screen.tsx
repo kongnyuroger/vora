@@ -70,6 +70,9 @@ export function HomeScreen({ copy }: { copy: HomeScreenCopy }) {
   const setActiveRide = useRideStore((s) => s.setActiveRide);
   const subscribeToRide = useRideStore((s) => s.subscribeToRide);
   const cancelRide = useRideStore((s) => s.cancelRide);
+  const sendSos = useRideStore((s) => s.sendSos);
+  const safetyAlert = useRideStore((s) => s.safetyAlert);
+  const dismissSafetyAlert = useRideStore((s) => s.dismissSafetyAlert);
 
   const mapRef = useRef<MapCanvasHandle>(null);
   const {
@@ -268,6 +271,15 @@ export function HomeScreen({ copy }: { copy: HomeScreenCopy }) {
               onComplete={() => {}}
               onCancel={() => cancelRide(activeRide.id)}
               onDone={handleDone}
+              onSos={() => {
+                const point = userPosition ?? {
+                  lat: activeRide.pickupLat,
+                  lng: activeRide.pickupLng,
+                };
+                sendSos(activeRide.id, point.lat, point.lng);
+              }}
+              safetyAlert={safetyAlert}
+              onDismissSafetyAlert={dismissSafetyAlert}
             />
           )
         ) : (

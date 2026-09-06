@@ -8,7 +8,6 @@ import { RidesGateway } from './rides.gateway';
 import { RidesService } from './rides.service';
 
 @Controller('rides')
-@UseGuards(JwtAuthGuard)
 export class RidesController {
   constructor(
     private readonly ridesService: RidesService,
@@ -16,6 +15,7 @@ export class RidesController {
   ) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   async create(
     @CurrentUser() user: RequestUser,
     @Body() dto: CreateRideDto,
@@ -33,7 +33,14 @@ export class RidesController {
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   getOne(@CurrentUser() user: RequestUser, @Param('id') id: string) {
     return this.ridesService.getRideForParticipant(id, user.userId);
+  }
+
+  /** Public "share trip" link — no auth, the unguessable ride id is the capability. */
+  @Get(':id/public')
+  getPublic(@Param('id') id: string) {
+    return this.ridesService.getPublicRideView(id);
   }
 }

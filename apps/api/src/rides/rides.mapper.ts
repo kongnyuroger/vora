@@ -5,6 +5,7 @@ import type {
 } from '@prisma/client';
 import type {
   PaymentMethod,
+  PublicRideView,
   RideDetail,
   RideDriverInfo,
   RideStatus,
@@ -40,6 +41,23 @@ export function toRideDetail(ride: RideWithDriver): RideDetail {
     createdAt: ride.createdAt.toISOString(),
     timeline: ride.timeline as unknown as RideTimelineEntry[],
     driver: ride.driver ? toRideDriverInfo(ride.driver) : null,
+  };
+}
+
+export function toPublicRideView(ride: RideWithDriver): PublicRideView {
+  return {
+    id: ride.id,
+    rideType: ride.rideType as unknown as RideType,
+    status: ride.status as unknown as RideStatus,
+    pickupLat: ride.pickupLat,
+    pickupLng: ride.pickupLng,
+    pickupLabel: ride.pickupLabel,
+    dropoffLat: ride.dropoffLat,
+    dropoffLng: ride.dropoffLng,
+    dropoffLabel: ride.dropoffLabel,
+    driver: ride.driver ? toRideDriverInfo(ride.driver) : null,
+    driverLat: ride.driver?.driverProfile?.currentLat ?? null,
+    driverLng: ride.driver?.driverProfile?.currentLng ?? null,
   };
 }
 

@@ -1,4 +1,10 @@
-import { PaymentMethod, RideStatus, RideType, VerificationStatus } from "./enums";
+import {
+  PaymentMethod,
+  RideStatus,
+  RideType,
+  SafetyEventType,
+  VerificationStatus,
+} from "./enums";
 import type { Ride, RideTimelineEntry } from "./types";
 
 export interface CreateRideRequest {
@@ -61,4 +67,32 @@ export interface DriverLocationPayload {
 
 export interface RideTakenPayload {
   rideId: string;
+}
+
+export interface SosRequest {
+  rideId: string;
+  lat: number;
+  lng: number;
+}
+
+export interface SafetyAlertPayload {
+  rideId: string;
+  type: SafetyEventType;
+  at: string;
+}
+
+/** Read-only view for the public "share trip" link — no PIN, no rider identity. */
+export interface PublicRideView {
+  id: string;
+  rideType: RideType;
+  status: RideStatus;
+  pickupLat: number;
+  pickupLng: number;
+  pickupLabel: string;
+  dropoffLat: number;
+  dropoffLng: number;
+  dropoffLabel: string;
+  driver: RideDriverInfo | null;
+  driverLat: number | null;
+  driverLng: number | null;
 }

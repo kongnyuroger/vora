@@ -55,6 +55,9 @@ export function DriverHomeScreen() {
   const completeTrip = useRideStore((s) => s.completeTrip);
   const cancelRide = useRideStore((s) => s.cancelRide);
   const setActiveRide = useRideStore((s) => s.setActiveRide);
+  const sendSos = useRideStore((s) => s.sendSos);
+  const safetyAlert = useRideStore((s) => s.safetyAlert);
+  const dismissSafetyAlert = useRideStore((s) => s.dismissSafetyAlert);
 
   const mapRef = useRef<MapCanvasHandle>(null);
   const { status: geoStatus, position, start, stop } = useWatchPosition();
@@ -172,6 +175,15 @@ export function DriverHomeScreen() {
             onComplete={() => completeTrip(activeRide.id)}
             onCancel={() => cancelRide(activeRide.id)}
             onDone={handleDone}
+            onSos={() => {
+              const point = position ?? {
+                lat: activeRide.pickupLat,
+                lng: activeRide.pickupLng,
+              };
+              sendSos(activeRide.id, point.lat, point.lng);
+            }}
+            safetyAlert={safetyAlert}
+            onDismissSafetyAlert={dismissSafetyAlert}
           />
         ) : incomingRequest ? (
           <div className="flex flex-col gap-4">

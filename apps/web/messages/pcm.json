@@ -85,6 +85,13 @@
     "arrivedButton": "I don reach",
     "startTripButton": "Start di trip",
     "completeTripButton": "Complete di trip",
+    "shareTrip": "Share di trip",
+    "sos": "SOS",
+    "sosConfirmPrompt": "You wan alert emergency contact dem?",
+    "sosConfirmCancel": "Cancel",
+    "sosConfirmYes": "Yes, send SOS",
+    "sosRegistered": "SOS don register — dis trip don flag for help",
+    "dismiss": "Close am",
     "status": {
       "REQUESTED": "E dey request…",
       "SEARCHING": "E dey find driver…",
@@ -107,5 +114,12 @@
     "incomingRequestTitle": "New ride request",
     "accept": "Accept",
     "decline": "Decline"
+  },
+  "Track": {
+    "title": "Live trip tracking",
+    "subtitle": "Dem share dis link make you follow dis VORA trip.",
+    "loading": "E dey load trip…",
+    "notFound": "Dis trip link no correct or e don expire.",
+    "verified": "Verified"
   }
 }
