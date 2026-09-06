@@ -2,6 +2,8 @@ import { create } from "zustand";
 import {
   SOCKET_EVENTS,
   type DriverLocationPayload,
+  type Payment,
+  type PaymentStatusPayload,
   type RideDetail,
   type RideStatusPayload,
   type RideTakenPayload,
@@ -20,11 +22,14 @@ interface RideState {
   driverLocation: DriverPoint | null;
   isOnline: boolean;
   safetyAlert: SafetyAlertPayload | null;
+  /** Settlement for the active ride — arrives when the driver completes the trip. */
+  payment: Payment | null;
 
   connect: (token: string) => void;
   disconnect: () => void;
 
   setActiveRide: (ride: RideDetail | null) => void;
+  setPayment: (payment: Payment | null) => void;
   subscribeToRide: (rideId: string) => void;
   dismissIncomingRequest: () => void;
 
@@ -47,6 +52,7 @@ export const useRideStore = create<RideState>()((set) => ({
   driverLocation: null,
   isOnline: false,
   safetyAlert: null,
+  payment: null,
 
   connect: (token) => {
     const socket = connectSocket(token);
@@ -59,6 +65,7 @@ export const useRideStore = create<RideState>()((set) => ({
     socket.off(SOCKET_EVENTS.RIDE_STATUS);
     socket.off(SOCKET_EVENTS.DRIVER_LOCATION);
     socket.off(SOCKET_EVENTS.RIDE_SAFETY_ALERT);
+    socket.off(SOCKET_EVENTS.PAYMENT_STATUS);
 
     socket.on(SOCKET_EVENTS.RIDE_REQUEST, (ride: RideDetail) => {
       set({ incomingRequest: ride });
@@ -109,6 +116,14 @@ export const useRideStore = create<RideState>()((set) => ({
         );
       },
     );
+
+    socket.on(SOCKET_EVENTS.PAYMENT_STATUS, (payload: PaymentStatusPayload) => {
+      set((state) =>
+        state.activeRide?.id === payload.rideId
+          ? { payment: payload.payment }
+          : {},
+      );
+    });
   },
 
   disconnect: () => {
@@ -119,10 +134,14 @@ export const useRideStore = create<RideState>()((set) => ({
       driverLocation: null,
       isOnline: false,
       safetyAlert: null,
+      payment: null,
     });
   },
 
-  setActiveRide: (ride) => set({ activeRide: ride }),
+  // A new ride starts with a clean slate — the previous trip's settlement must
+  // never linger into the next one's completed screen.
+  setActiveRide: (ride) => set({ activeRide: ride, payment: null }),
+  setPayment: (payment) => set({ payment }),
 
   subscribeToRide: (rideId) => {
     getSocket()?.emit(SOCKET_EVENTS.RIDE_SUBSCRIBE, { rideId });

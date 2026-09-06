@@ -67,6 +67,23 @@
     "surge": "Peak pricing",
     "total": "Total"
   },
+  "Payment": {
+    "payWith": "Pay with",
+    "method": {
+      "CASH": "Cash",
+      "MOMO_MTN": "MTN MoMo",
+      "MOMO_ORANGE": "Orange Money",
+      "WALLET": "VORA Wallet"
+    },
+    "walletShort": "{amount} short — top up to pay from your wallet",
+    "topUp": "Top up",
+    "topUpTitle": "Top up your wallet",
+    "topUpConfirm": "Top up",
+    "topUpSending": "Sending…",
+    "topUpPending": "Approve the prompt on your phone to finish the top-up",
+    "topUpFailed": "Top-up failed — try again",
+    "close": "Close"
+  },
   "Ride": {
     "book": "Book",
     "booking": "Booking…",

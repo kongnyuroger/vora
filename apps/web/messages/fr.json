@@ -67,6 +67,23 @@
     "surge": "Tarif heure de pointe",
     "total": "Total"
   },
+  "Payment": {
+    "payWith": "Payer avec",
+    "method": {
+      "CASH": "Espèces",
+      "MOMO_MTN": "MTN MoMo",
+      "MOMO_ORANGE": "Orange Money",
+      "WALLET": "Portefeuille VORA"
+    },
+    "walletShort": "Il manque {amount} — rechargez pour payer par portefeuille",
+    "topUp": "Recharger",
+    "topUpTitle": "Rechargez votre portefeuille",
+    "topUpConfirm": "Recharger",
+    "topUpSending": "Envoi…",
+    "topUpPending": "Validez la demande sur votre téléphone pour finir la recharge",
+    "topUpFailed": "Recharge échouée — réessayez",
+    "close": "Fermer"
+  },
   "Ride": {
     "book": "Réserver",
     "booking": "Réservation…",

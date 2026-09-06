@@ -4,12 +4,16 @@ import type {
   CreateRideResponse,
   FareQuoteResponse,
   LandmarkSearchResult,
+  Payment,
   PublicRideView,
   RequestOtpPayload,
   RequestOtpResponse,
   RideDetail,
   User,
   VerifyOtpPayload,
+  WalletTopupRequest,
+  WalletTopupResponse,
+  WalletView,
 } from "@vora/shared";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
@@ -105,4 +109,28 @@ export function getRide(rideId: string, token: string) {
 
 export function getPublicRide(rideId: string) {
   return apiFetch<PublicRideView>(`/rides/${rideId}/public`);
+}
+
+export function getRidePayment(rideId: string, token: string) {
+  return apiFetch<Payment>(`/payments/ride/${rideId}`, { token });
+}
+
+/** Asks the provider for a fresh status — use while a MoMo charge is still PENDING. */
+export function refreshRidePayment(rideId: string, token: string) {
+  return apiFetch<Payment>(`/payments/ride/${rideId}/refresh`, {
+    method: "POST",
+    token,
+  });
+}
+
+export function getWallet(token: string) {
+  return apiFetch<WalletView>("/wallet", { token });
+}
+
+export function topUpWallet(payload: WalletTopupRequest, token: string) {
+  return apiFetch<WalletTopupResponse>("/wallet/topup", {
+    method: "POST",
+    token,
+    body: JSON.stringify(payload),
+  });
 }
