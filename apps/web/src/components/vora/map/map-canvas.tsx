@@ -8,9 +8,16 @@ import {
 } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import type { RouteGeometry } from "@vora/shared";
+import { RideType, type NearbyDriver, type RouteGeometry } from "@vora/shared";
 
-const YAOUNDE_CENTER: [number, number] = [11.5021, 3.848];
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
+
+/** Where the map opens before the rider shares a location. */
+export const MAP_DEFAULT_CENTER = { lat: 3.848, lng: 11.5021 };
+const YAOUNDE_CENTER: [number, number] = [
+  MAP_DEFAULT_CENTER.lng,
+  MAP_DEFAULT_CENTER.lat,
+];
 const DEFAULT_ZOOM = 12;
 const FLY_ZOOM = 15;
 const ROUTE_SOURCE_ID = "vora-route";
@@ -26,6 +33,7 @@ export interface MapCanvasHandle {
   setDropoff: (point: { lat: number; lng: number } | null) => void;
   setUserLocation: (point: { lat: number; lng: number } | null) => void;
   setDriverLocation: (point: { lat: number; lng: number } | null) => void;
+  setNearbyDrivers: (drivers: NearbyDriver[]) => void;
   setRoute: (geometry: RouteGeometry | null) => void;
   fitToRoute: (geometry: RouteGeometry) => void;
 }
@@ -41,11 +49,12 @@ export const MapCanvas = forwardRef<MapCanvasHandle>(function MapCanvas(
   const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const driverMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const driverAnimRef = useRef<number | null>(null);
+  const nearbyMarkersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());
 
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    if (!containerRef.current || mapRef.current || !MAPBOX_TOKEN) return;
 
-    mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
+    mapboxgl.accessToken = MAPBOX_TOKEN;
 
     const map = new mapboxgl.Map({
       container: containerRef.current,
@@ -58,8 +67,10 @@ export const MapCanvas = forwardRef<MapCanvasHandle>(function MapCanvas(
     map.addControl(new mapboxgl.AttributionControl({ compact: true }));
     mapRef.current = map;
 
+    const nearbyMarkers = nearbyMarkersRef.current;
     return () => {
       if (driverAnimRef.current) cancelAnimationFrame(driverAnimRef.current);
+      nearbyMarkers.clear();
       map.remove();
       mapRef.current = null;
     };
@@ -147,6 +158,41 @@ export const MapCanvas = forwardRef<MapCanvasHandle>(function MapCanvas(
           .addTo(mapRef.current);
       } else {
         dropoffMarkerRef.current.setLngLat([point.lng, point.lat]);
+      }
+    },
+    setNearbyDrivers: (drivers) => {
+      const map = mapRef.current;
+      if (!map) return;
+
+      const markers = nearbyMarkersRef.current;
+      const seen = new Set<string>();
+
+      for (const driver of drivers) {
+        seen.add(driver.userId);
+        const existing = markers.get(driver.userId);
+        if (existing) {
+          existing.setLngLat([driver.lng, driver.lat]);
+          continue;
+        }
+
+        const el = document.createElement("div");
+        el.className = "vora-nearby-driver";
+        el.innerHTML = driver.rideTypes.includes(RideType.MOTO)
+          ? NEARBY_MOTO_SVG
+          : NEARBY_CAR_SVG;
+        markers.set(
+          driver.userId,
+          new mapboxgl.Marker({ element: el, anchor: "center" })
+            .setLngLat([driver.lng, driver.lat])
+            .addTo(map),
+        );
+      }
+
+      for (const [userId, marker] of markers) {
+        if (!seen.has(userId)) {
+          marker.remove();
+          markers.delete(userId);
+        }
       }
     },
     setRoute: (geometry) => {
@@ -242,6 +288,15 @@ export const MapCanvas = forwardRef<MapCanvasHandle>(function MapCanvas(
       */}
       <div className="absolute inset-0">
         <div ref={containerRef} className="h-full w-full" />
+        {/* Without a token Mapbox fails silently to a black rectangle, which
+            looks like a broken app rather than a missing env var. */}
+        {!MAPBOX_TOKEN && (
+          <div className="absolute inset-0 flex items-center justify-center bg-vora-ink px-8 text-center">
+            <p className="text-caption text-white/70">
+              Map unavailable — NEXT_PUBLIC_MAPBOX_TOKEN is not set.
+            </p>
+          </div>
+        )}
       </div>
       <style jsx global>{`
         .vora-user-dot {
@@ -253,6 +308,10 @@ export const MapCanvas = forwardRef<MapCanvasHandle>(function MapCanvas(
           box-shadow:
             0 0 0 4px rgba(12, 124, 89, 0.3),
             0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+        .vora-nearby-driver {
+          opacity: 0.85;
+          transition: opacity 200ms ease;
         }
         .mapboxgl-ctrl-attrib.mapboxgl-compact {
           opacity: 0.6;
@@ -273,6 +332,25 @@ const DROPOFF_PIN_SVG = `
 <svg width="36" height="46" viewBox="0 0 36 46" xmlns="http://www.w3.org/2000/svg">
   <path d="M18 0C8.06 0 0 8.06 0 18c0 13.5 18 28 18 28s18-14.5 18-28C36 8.06 27.94 0 18 0z" fill="#0C7C59"/>
   <circle cx="18" cy="18" r="7" fill="#FFFFFF"/>
+</svg>
+`;
+
+/* Smaller and quieter than the assigned-driver pin — ambient presence, not the driver you booked. */
+const NEARBY_MOTO_SVG = `
+<svg width="26" height="26" viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="13" cy="13" r="11" fill="#0E1420" stroke="#F6A609" stroke-width="1.5"/>
+  <circle cx="9" cy="16" r="2.2" stroke="#F6A609" stroke-width="1.3" fill="none"/>
+  <circle cx="17" cy="16" r="2.2" stroke="#F6A609" stroke-width="1.3" fill="none"/>
+  <path d="M9 16l3-4h4l1 4" stroke="#F6A609" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+`;
+
+const NEARBY_CAR_SVG = `
+<svg width="26" height="26" viewBox="0 0 26 26" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="13" cy="13" r="11" fill="#0E1420" stroke="#0C7C59" stroke-width="1.5"/>
+  <path d="M7.5 15.5l1-3.4a1.4 1.4 0 0 1 1.35-1h6.3a1.4 1.4 0 0 1 1.35 1l1 3.4" stroke="#1FA971" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="9.5" cy="15.8" r="1.3" fill="#1FA971"/>
+  <circle cx="16.5" cy="15.8" r="1.3" fill="#1FA971"/>
 </svg>
 `;
 

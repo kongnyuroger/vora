@@ -4,6 +4,7 @@ import type {
   CreateRideResponse,
   FareQuoteResponse,
   LandmarkSearchResult,
+  NearbyDriver,
   Payment,
   PublicRideView,
   RequestOtpPayload,
@@ -101,6 +102,17 @@ export function createRide(payload: CreateRideRequest, token: string) {
     token,
     body: JSON.stringify(payload),
   });
+}
+
+export function getNearbyDrivers(
+  point: { lat: number; lng: number },
+  token: string,
+) {
+  const params = new URLSearchParams({
+    lat: String(point.lat),
+    lng: String(point.lng),
+  });
+  return apiFetch<NearbyDriver[]>(`/rides/nearby-drivers?${params}`, { token });
 }
 
 export function getRide(rideId: string, token: string) {

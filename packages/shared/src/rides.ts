@@ -39,6 +39,14 @@ export interface CreateRideResponse {
   driversNotified: number;
 }
 
+/** A driver pin on the map — no identity, just "somebody is out there". */
+export interface NearbyDriver {
+  userId: string;
+  rideTypes: RideType[];
+  lat: number;
+  lng: number;
+}
+
 /** Statuses in which a ride is still waiting to be picked up. */
 export const PRE_TRIP_STATUSES: RideStatus[] = [
   RideStatus.REQUESTED,

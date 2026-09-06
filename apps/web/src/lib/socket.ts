@@ -14,7 +14,13 @@ export function connectSocket(token: string): Socket {
     return socket;
   }
 
-  socket = io(API_URL, { auth: { token }, transports: ["websocket"] });
+  // Polling is kept as a fallback rather than forcing websocket-only: a
+  // carrier proxy that blocks the upgrade would otherwise take live tracking
+  // down completely, which is the one thing the demo cannot lose.
+  socket = io(API_URL, {
+    auth: { token },
+    transports: ["websocket", "polling"],
+  });
   return socket;
 }
 

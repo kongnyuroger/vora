@@ -1,4 +1,7 @@
 {
+  "Common": {
+    "retry": "Retry"
+  },
   "Home": {
     "title": "VORA",
     "tagline": "Book a bendskin, a taxi, or a shared ride by landmark, at a fair fixed price.",
@@ -44,7 +47,8 @@
     "change": "Change",
     "useMyLocation": "Use my location",
     "locating": "Locating…",
-    "locationDenied": "Location access denied — enable it in your browser settings"
+    "locationDenied": "Location access denied — enable it in your browser settings",
+    "searchError": "Couldn't reach VORA — check your connection"
   },
   "RideTypes": {
     "heading": "Choose a ride",
@@ -97,6 +101,7 @@
     "noDriversFound": "No drivers nearby right now — try again shortly",
     "searchingTitle": "Looking for a driver…",
     "searchingNear": "Near {pickup}",
+    "searchingSlow": "Still looking. Drivers nearby may be busy — you can keep waiting or cancel.",
     "cancel": "Cancel",
     "fare": "Fare",
     "pin": "Trip PIN",

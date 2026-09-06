@@ -1,0 +1,43 @@
+# Render blueprint for the VORA API. In the Render dashboard: New -> Blueprint,
+# point it at this repo, and it creates the service with these settings.
+#
+# Values marked `sync: false` are deliberately not in the repo — Render prompts
+# for them on first deploy. Set them from apps/api/.env.example.
+services:
+  - type: web
+    name: vora-api
+    runtime: docker
+    # The build context is the repo root, not apps/api: the API depends on the
+    # @vora/shared workspace package, so the whole pnpm workspace has to be
+    # visible to the build.
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: .
+    plan: free
+    # Same side of the Atlantic as the Neon database, so every query isn't a
+    # transatlantic round trip.
+    region: virginia
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 4000
+      # Neon pooled connection string (the -pooler host).
+      - key: DATABASE_URL
+        sync: false
+      # Same host without -pooler: migrations take advisory locks a pooler
+      # cannot hold, and the container migrates on start.
+      - key: DIRECT_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      # Without this, fares fall back to straight-line distance.
+      - key: MAPBOX_SECRET
+        sync: false
+      # The deployed web origin. Blank means "any origin", which is fine
+      # locally but not in production.
+      - key: CORS_ORIGINS
+        sync: false
+      # Leave blank to use the simulated MoMo rail instead of the sandbox.
+      - key: CAMPAY_API_KEY
+        sync: false
+      - key: CAMPAY_API_SECRET
+        sync: false
