@@ -11,7 +11,13 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { RideType, type NearbyDriver, type RouteGeometry } from "@vora/shared";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
-const YAOUNDE_CENTER: [number, number] = [11.5021, 3.848];
+
+/** Where the map opens before the rider shares a location. */
+export const MAP_DEFAULT_CENTER = { lat: 3.848, lng: 11.5021 };
+const YAOUNDE_CENTER: [number, number] = [
+  MAP_DEFAULT_CENTER.lng,
+  MAP_DEFAULT_CENTER.lat,
+];
 const DEFAULT_ZOOM = 12;
 const FLY_ZOOM = 15;
 const ROUTE_SOURCE_ID = "vora-route";

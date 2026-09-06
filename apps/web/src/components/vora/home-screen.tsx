@@ -15,7 +15,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { BottomSheet, type SheetSnap } from "@/components/vora/bottom-sheet";
 import { LandmarkSearch } from "@/components/vora/map/landmark-search";
-import type { MapCanvasHandle } from "@/components/vora/map/map-canvas";
+import {
+  MAP_DEFAULT_CENTER,
+  type MapCanvasHandle,
+} from "@/components/vora/map/map-canvas";
 import { PaymentMethodPicker } from "@/components/vora/payment/payment-method-picker";
 import { OnTripSheet } from "@/components/vora/ride/on-trip-sheet";
 import { RideTypeCarousel } from "@/components/vora/ride/ride-type-carousel";
@@ -108,16 +111,19 @@ export function HomeScreen({ copy }: { copy: HomeScreenCopy }) {
     mapRef.current?.setDriverLocation(driverLocation);
   }, [driverLocation]);
 
-  // Ambient "the city is alive" layer. Dropped once a ride is under way so the
-  // assigned driver's marker isn't lost in a crowd of unrelated pins.
+  // Ambient "the city is alive" layer. Centred on the map's own default until
+  // the rider shares a location, so the map has drivers on it from the first
+  // paint rather than waiting behind a permission prompt. Dropped once a ride
+  // is under way, so the assigned driver isn't lost in a crowd of pins.
+  const nearbyCenter = userPosition ?? MAP_DEFAULT_CENTER;
   const { data: nearbyDrivers } = useQuery({
     queryKey: [
       "nearbyDrivers",
-      userPosition?.lat?.toFixed(3),
-      userPosition?.lng?.toFixed(3),
+      nearbyCenter.lat.toFixed(3),
+      nearbyCenter.lng.toFixed(3),
     ],
-    queryFn: () => getNearbyDrivers(userPosition!, accessToken!),
-    enabled: !!userPosition && !!accessToken && !activeRide,
+    queryFn: () => getNearbyDrivers(nearbyCenter, accessToken!),
+    enabled: !!accessToken && !activeRide,
     refetchInterval: NEARBY_REFRESH_MS,
   });
 
