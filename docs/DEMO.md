@@ -9,6 +9,7 @@ The scripted happy path for the 3–4 minute jury demo in [`VORA-BUILD.md` §10]
 - [ ] Driver window: tap **Go online** and confirm it says "You're online". Dispatch only offers rides to a driver holding a live socket, so a driver who was online earlier but has since closed the tab will not receive anything.
 - [ ] Driver window: open DevTools → **Sensors → Location** and set a custom location near the pickup. Driver movement comes from real device geolocation, so on a laptop this is how the marker moves.
 - [ ] Third window ready (not yet navigated) for the share-trip link.
+- [ ] **Wake the free tiers.** Render spins the API down after ~15 minutes idle and takes up to a minute to come back; Neon scales to zero separately. Load the app a few minutes before you present, and again just before you stand up — logging in on both windows already does this.
 - [ ] Phone on mobile data as the backup device, plus the screen recording of the two-window run.
 
 ## The run
@@ -41,7 +42,7 @@ If you want to show Mobile Money, book a second ride with **MTN MoMo** selected:
 |---|---|---|
 | *"No drivers nearby right now"* | The driver window isn't online, or its socket dropped | Tap **Go online** again in the driver window. This message is the app being honest, not a crash. |
 | Search says *"Couldn't reach VORA"* | API unreachable | Tap **Retry**. If it persists, switch to the recording. |
-| First request after a quiet spell hangs | Neon scaled to zero and is waking | Retry once; it comes back in a few seconds. Load any page a minute before you present to keep it warm. |
+| First request after a quiet spell hangs | Render spun the free service down, or Neon scaled to zero | Wait it out — up to a minute for Render, a few seconds for Neon — and retry. Keep both warm by loading a page shortly before presenting. |
 | Driver marker doesn't move | Real geolocation, no GPS on a laptop | Change the location in DevTools → Sensors. |
 | Map is a black rectangle | `NEXT_PUBLIC_MAPBOX_TOKEN` missing on the deployment | The app says so on the map itself. Nothing to do live — use the backup. |
 

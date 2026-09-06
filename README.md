@@ -55,17 +55,21 @@ The API boots and serves `/health` without a database connection — Prisma conn
 
 ## Deploying
 
-**API — any container host (Railway, Fly, Render).** The build context is the repo root, because the API depends on the `@vora/shared` workspace package:
+Deploy the API first: the web build needs its URL, and the API only needs the web URL afterwards for CORS.
+
+**API — Render** (or any container host). [`render.yaml`](render.yaml) is a blueprint: in the dashboard, **New → Blueprint**, point it at this repo, and fill in the secrets it prompts for. The build context is the repo root, because the API depends on the `@vora/shared` workspace package:
 
 ```bash
-docker build -f apps/api/Dockerfile -t vora-api .
+docker build -f apps/api/Dockerfile -t vora-api .   # to reproduce locally
 ```
 
 The container runs `prisma migrate deploy` before starting, so a deploy carries its own schema changes. Environment: `DATABASE_URL`, `DIRECT_URL`, `JWT_SECRET`, `MAPBOX_SECRET`, `CORS_ORIGINS` (the deployed web URL), optionally `CAMPAY_API_KEY` / `CAMPAY_API_SECRET`.
 
 **Web — Vercel.** Set the project's root directory to `apps/web`; pnpm workspaces resolve from the repo root, and the build runs the i18n key check first. Environment: `NEXT_PUBLIC_API_URL` (the deployed API URL) and `NEXT_PUBLIC_MAPBOX_TOKEN`.
 
-Set `CORS_ORIGINS` on the API to the Vercel URL once it exists — blank means "any origin", which is fine locally but not in production.
+Then set `CORS_ORIGINS` on the API to the Vercel URL and redeploy.
+
+> **Free tiers sleep.** Render spins a free service down after ~15 minutes idle and takes up to a minute to wake; Neon scales to zero and can drop the first connection. Open the app a few minutes before you present, and load a page once more just before.
 
 ## Demo
 
