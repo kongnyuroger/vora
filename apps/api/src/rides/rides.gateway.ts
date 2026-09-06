@@ -43,8 +43,10 @@ function rideRoom(rideId: string): string {
   return `ride:${rideId}`;
 }
 
+const DRIVER_ROOM_PREFIX = 'driver:';
+
 function driverRoom(driverId: string): string {
-  return `driver:${driverId}`;
+  return `${DRIVER_ROOM_PREFIX}${driverId}`;
 }
 
 @WebSocketGateway({ cors: { origin: '*' } })
@@ -266,6 +268,24 @@ export class RidesGateway implements OnGatewayConnection, OnGatewayDisconnect {
     } catch (err) {
       this.emitError(client, this.errorMessage(err));
     }
+  }
+
+  /**
+   * Drivers with a live socket on this server right now. `DriverProfile.isOnline`
+   * alone is not enough: it survives a crashed client and is set for the seeded
+   * demo drivers, neither of which can answer a ride request.
+   */
+  reachableDriverIds(): string[] {
+    const rooms = this.server?.sockets?.adapter?.rooms;
+    if (!rooms) return [];
+
+    const ids: string[] = [];
+    for (const room of rooms.keys()) {
+      if (room.startsWith(DRIVER_ROOM_PREFIX)) {
+        ids.push(room.slice(DRIVER_ROOM_PREFIX.length));
+      }
+    }
+    return ids;
   }
 
   /** Called by RidesController right after a ride is created. */

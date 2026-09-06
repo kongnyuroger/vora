@@ -14,6 +14,7 @@ import {
   RideStatus,
   SafetyEventType,
   type CreateRideRequest,
+  type NearbyDriver,
   type PublicRideView,
   type RideDetail,
   type RideTimelineEntry,
@@ -44,9 +45,17 @@ export class RidesService {
     private readonly fares: FaresService,
   ) {}
 
+  /**
+   * @param reachableDriverIds drivers with a live socket right now. Dispatch is
+   * restricted to these: a `DriverProfile` row can say `isOnline` while nothing
+   * is listening (a crashed client, or the seeded demo drivers that exist to
+   * populate the map), and offering a ride to one of those would leave the
+   * rider watching a spinner that no one can answer.
+   */
   async createRide(
     riderId: string,
     dto: CreateRideRequest,
+    reachableDriverIds: string[],
   ): Promise<{ ride: RideDetail; candidateDriverIds: string[] }> {
     const pickup = { lat: dto.pickupLat, lng: dto.pickupLng };
     const dropoff = { lat: dto.dropoffLat, lng: dto.dropoffLng };
@@ -90,7 +99,11 @@ export class RidesService {
       include: RIDE_INCLUDE,
     });
 
-    const candidates = await this.findNearbyOnlineDrivers(dto.rideType, pickup);
+    const candidates = await this.findNearbyOnlineDrivers(
+      dto.rideType,
+      pickup,
+      reachableDriverIds,
+    );
 
     if (candidates.length === 0) {
       // Nobody to notify — cancel now instead of leaving a zombie
@@ -110,7 +123,13 @@ export class RidesService {
   async findNearbyOnlineDrivers(
     rideType: RideType,
     point: { lat: number; lng: number },
+    reachableDriverIds: string[],
   ): Promise<DriverCandidate[]> {
+    if (reachableDriverIds.length === 0) return [];
+
+    // Reachability is part of the WHERE clause, not a filter afterwards —
+    // otherwise unreachable drivers could fill the LIMIT and crowd out a real
+    // one standing slightly further away.
     const rows = await this.prisma.$queryRaw<DriverCandidate[]>`
       SELECT "userId",
         ST_DistanceSphere(
@@ -122,11 +141,47 @@ export class RidesService {
         AND "currentLat" IS NOT NULL
         AND "currentLng" IS NOT NULL
         AND ${rideType}::"RideType" = ANY("rideTypes")
+        AND "userId" IN (${Prisma.join(reachableDriverIds)})
       ORDER BY "distanceM" ASC
       LIMIT ${MAX_CANDIDATE_DRIVERS}
     `;
 
     return rows.filter((r) => Number(r.distanceM) <= SEARCH_RADIUS_M);
+  }
+
+  /** Online drivers near a point, for the map's "the city is alive" layer. */
+  async findNearbyDriverPins(
+    point: { lat: number; lng: number },
+    radiusM: number,
+    limit: number,
+  ): Promise<NearbyDriver[]> {
+    const rows = await this.prisma.$queryRaw<
+      (NearbyDriver & { distanceM: number })[]
+    >`
+      SELECT p."userId",
+        p."rideTypes",
+        p."currentLat" AS "lat",
+        p."currentLng" AS "lng",
+        ST_DistanceSphere(
+          ST_MakePoint(p."currentLng", p."currentLat"),
+          ST_MakePoint(${point.lng}, ${point.lat})
+        ) AS "distanceM"
+      FROM driver_profiles p
+      WHERE p."isOnline" = true
+        AND p."currentLat" IS NOT NULL
+        AND p."currentLng" IS NOT NULL
+      ORDER BY "distanceM" ASC
+      LIMIT ${limit}
+    `;
+
+    return rows
+      .filter((r) => Number(r.distanceM) <= radiusM)
+      .map(({ userId, rideTypes, lat, lng }) => ({
+        userId,
+        rideTypes,
+        lat,
+        lng,
+      }));
   }
 
   /**
