@@ -85,6 +85,13 @@
     "arrivedButton": "I've arrived",
     "startTripButton": "Start trip",
     "completeTripButton": "Complete trip",
+    "shareTrip": "Share trip",
+    "sos": "SOS",
+    "sosConfirmPrompt": "Alert emergency contacts?",
+    "sosConfirmCancel": "Cancel",
+    "sosConfirmYes": "Yes, send SOS",
+    "sosRegistered": "SOS registered — this trip is flagged for help",
+    "dismiss": "Dismiss",
     "status": {
       "REQUESTED": "Requesting…",
       "SEARCHING": "Looking for a driver…",
@@ -107,5 +114,12 @@
     "incomingRequestTitle": "New ride request",
     "accept": "Accept",
     "decline": "Decline"
+  },
+  "Track": {
+    "title": "Live trip tracking",
+    "subtitle": "Shared so you can follow this VORA trip.",
+    "loading": "Loading trip…",
+    "notFound": "This trip link is invalid or has expired.",
+    "verified": "Verified"
   }
 }

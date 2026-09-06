@@ -14,11 +14,13 @@ export const SOCKET_EVENTS = {
   RIDE_START: "ride:start",
   RIDE_COMPLETE: "ride:complete",
   RIDE_CANCEL: "ride:cancel",
+  RIDE_SOS: "ride:sos",
 
   // Server -> client
   RIDE_REQUEST: "ride:request",
   RIDE_ACCEPTED: "ride:accepted",
   RIDE_TAKEN: "ride:taken",
   RIDE_STATUS: "ride:status",
+  RIDE_SAFETY_ALERT: "ride:safety-alert",
   ERROR: "error",
 } as const;

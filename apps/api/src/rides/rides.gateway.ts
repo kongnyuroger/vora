@@ -11,11 +11,13 @@ import {
 import {
   RideStatus,
   Role,
+  SafetyEventType,
   SOCKET_EVENTS,
   type DriverLocationPayload,
   type RideDetail,
   type RideStatusPayload,
   type RideTakenPayload,
+  type SafetyAlertPayload,
 } from '@vora/shared';
 import type { Server, Socket } from 'socket.io';
 import type { JwtPayload } from '../auth/auth.service';
@@ -203,6 +205,36 @@ export class RidesGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
     if (client.data.activeRideId === body?.rideId) {
       client.data.activeRideId = undefined;
+    }
+  }
+
+  @SubscribeMessage(SOCKET_EVENTS.RIDE_SOS)
+  async onSos(
+    client: AppSocket,
+    body: { rideId: string; lat: number; lng: number },
+  ) {
+    const user = this.requireUser(client);
+    if (!user || !body?.rideId || !isFinitePoint(body)) return;
+
+    try {
+      await this.rides.recordSafetyEvent(
+        body.rideId,
+        user.userId,
+        SafetyEventType.SOS,
+        body.lat,
+        body.lng,
+      );
+      const payload: SafetyAlertPayload = {
+        rideId: body.rideId,
+        type: SafetyEventType.SOS,
+        at: new Date().toISOString(),
+      };
+      this.server
+        .to(rideRoom(body.rideId))
+        .emit(SOCKET_EVENTS.RIDE_SAFETY_ALERT, payload);
+      this.logger.log(`SOS raised on ride ${body.rideId} by ${user.userId}`);
+    } catch (err) {
+      this.emitError(client, this.errorMessage(err));
     }
   }
 

@@ -5,6 +5,7 @@ import {
   type RideDetail,
   type RideStatusPayload,
   type RideTakenPayload,
+  type SafetyAlertPayload,
 } from "@vora/shared";
 import { connectSocket, disconnectSocket, getSocket } from "@/lib/socket";
 
@@ -18,6 +19,7 @@ interface RideState {
   incomingRequest: RideDetail | null;
   driverLocation: DriverPoint | null;
   isOnline: boolean;
+  safetyAlert: SafetyAlertPayload | null;
 
   connect: (token: string) => void;
   disconnect: () => void;
@@ -31,6 +33,8 @@ interface RideState {
   startTrip: (rideId: string) => void;
   completeTrip: (rideId: string) => void;
   cancelRide: (rideId: string) => void;
+  sendSos: (rideId: string, lat: number, lng: number) => void;
+  dismissSafetyAlert: () => void;
 
   goOnline: (lat: number, lng: number) => void;
   goOffline: () => void;
@@ -42,6 +46,7 @@ export const useRideStore = create<RideState>()((set) => ({
   incomingRequest: null,
   driverLocation: null,
   isOnline: false,
+  safetyAlert: null,
 
   connect: (token) => {
     const socket = connectSocket(token);
@@ -53,6 +58,7 @@ export const useRideStore = create<RideState>()((set) => ({
     socket.off(SOCKET_EVENTS.RIDE_TAKEN);
     socket.off(SOCKET_EVENTS.RIDE_STATUS);
     socket.off(SOCKET_EVENTS.DRIVER_LOCATION);
+    socket.off(SOCKET_EVENTS.RIDE_SAFETY_ALERT);
 
     socket.on(SOCKET_EVENTS.RIDE_REQUEST, (ride: RideDetail) => {
       set({ incomingRequest: ride });
@@ -92,6 +98,17 @@ export const useRideStore = create<RideState>()((set) => ({
     socket.on(SOCKET_EVENTS.DRIVER_LOCATION, (payload: DriverLocationPayload) => {
       set({ driverLocation: { lat: payload.lat, lng: payload.lng } });
     });
+
+    socket.on(
+      SOCKET_EVENTS.RIDE_SAFETY_ALERT,
+      (payload: SafetyAlertPayload) => {
+        set((state) =>
+          state.activeRide?.id === payload.rideId
+            ? { safetyAlert: payload }
+            : {},
+        );
+      },
+    );
   },
 
   disconnect: () => {
@@ -101,6 +118,7 @@ export const useRideStore = create<RideState>()((set) => ({
       incomingRequest: null,
       driverLocation: null,
       isOnline: false,
+      safetyAlert: null,
     });
   },
 
@@ -127,6 +145,10 @@ export const useRideStore = create<RideState>()((set) => ({
   cancelRide: (rideId) => {
     getSocket()?.emit(SOCKET_EVENTS.RIDE_CANCEL, { rideId });
   },
+  sendSos: (rideId, lat, lng) => {
+    getSocket()?.emit(SOCKET_EVENTS.RIDE_SOS, { rideId, lat, lng });
+  },
+  dismissSafetyAlert: () => set({ safetyAlert: null }),
 
   goOnline: (lat, lng) => {
     getSocket()?.emit(SOCKET_EVENTS.DRIVER_ONLINE, { lat, lng });

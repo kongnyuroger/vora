@@ -1,13 +1,15 @@
 "use client";
 
-import { HardHat, ShieldCheck } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useState } from "react";
+import { AlertTriangle, HardHat, Share2, ShieldCheck, X } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import {
   RideStatus,
   RideType,
   Role,
   VerificationStatus,
   type RideDetail,
+  type SafetyAlertPayload,
 } from "@vora/shared";
 import { Button } from "@/components/ui/button";
 import { formatXaf } from "@/lib/utils";
@@ -20,6 +22,9 @@ interface OnTripSheetProps {
   onComplete: () => void;
   onCancel: () => void;
   onDone: () => void;
+  onSos: () => void;
+  safetyAlert: SafetyAlertPayload | null;
+  onDismissSafetyAlert: () => void;
 }
 
 const CANCELLABLE_STATUSES: RideStatus[] = [
@@ -38,14 +43,47 @@ export function OnTripSheet({
   onComplete,
   onCancel,
   onDone,
+  onSos,
+  safetyAlert,
+  onDismissSafetyAlert,
 }: OnTripSheetProps) {
   const t = useTranslations("Ride");
+  const locale = useLocale();
   const isDriver = role === Role.DRIVER;
   const isTerminal =
     ride.status === RideStatus.COMPLETED || ride.status === RideStatus.CANCELLED;
+  const [confirmingSos, setConfirmingSos] = useState(false);
+
+  const handleShareTrip = () => {
+    const url = `${window.location.origin}/${locale}/track/${ride.id}`;
+    navigator.clipboard?.writeText(url).catch(() => {});
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  const handleSosConfirm = () => {
+    setConfirmingSos(false);
+    onSos();
+  };
 
   return (
     <div className="flex flex-col gap-4">
+      {safetyAlert?.rideId === ride.id && (
+        <div className="flex items-center gap-3 rounded-card border border-vora-danger/30 bg-vora-danger/10 px-4 py-3 text-vora-danger">
+          <AlertTriangle className="size-5 shrink-0" />
+          <span className="flex-1 text-caption font-medium">
+            {t("sosRegistered")}
+          </span>
+          <button
+            type="button"
+            onClick={onDismissSafetyAlert}
+            aria-label={t("dismiss")}
+            className="shrink-0"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <span className="text-body font-semibold text-secondary-foreground">
           {t(`status.${ride.status}`)}
@@ -91,6 +129,44 @@ export function OnTripSheet({
           {formatXaf(ride.fareXaf)}
         </span>
       </div>
+
+      {!isTerminal &&
+        (confirmingSos ? (
+          <div className="flex items-center gap-2 rounded-card border border-vora-danger/30 bg-vora-danger/5 px-4 py-3">
+            <span className="flex-1 text-caption font-medium text-vora-danger">
+              {t("sosConfirmPrompt")}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setConfirmingSos(false)}
+            >
+              {t("sosConfirmCancel")}
+            </Button>
+            <Button variant="destructive" size="sm" onClick={handleSosConfirm}>
+              {t("sosConfirmYes")}
+            </Button>
+          </div>
+        ) : (
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={handleShareTrip}
+            >
+              <Share2 data-icon="inline-start" />
+              {t("shareTrip")}
+            </Button>
+            <Button
+              variant="destructive"
+              className="flex-1"
+              onClick={() => setConfirmingSos(true)}
+            >
+              <AlertTriangle data-icon="inline-start" />
+              {t("sos")}
+            </Button>
+          </div>
+        ))}
 
       {isDriver && ride.status === RideStatus.ARRIVING && (
         <Button size="cta" className="w-full" onClick={onArrived}>

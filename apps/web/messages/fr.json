@@ -85,6 +85,13 @@
     "arrivedButton": "Je suis arrivé",
     "startTripButton": "Démarrer la course",
     "completeTripButton": "Terminer la course",
+    "shareTrip": "Partager la course",
+    "sos": "SOS",
+    "sosConfirmPrompt": "Alerter les contacts d'urgence ?",
+    "sosConfirmCancel": "Annuler",
+    "sosConfirmYes": "Oui, envoyer SOS",
+    "sosRegistered": "SOS enregistré — cette course est signalée pour assistance",
+    "dismiss": "Fermer",
     "status": {
       "REQUESTED": "Demande en cours…",
       "SEARCHING": "Recherche d'un chauffeur…",
@@ -107,5 +114,12 @@
     "incomingRequestTitle": "Nouvelle demande de course",
     "accept": "Accepter",
     "decline": "Refuser"
+  },
+  "Track": {
+    "title": "Suivi en direct",
+    "subtitle": "Partagé pour que vous puissiez suivre cette course VORA.",
+    "loading": "Chargement de la course…",
+    "notFound": "Ce lien de suivi est invalide ou a expiré.",
+    "verified": "Vérifié"
   }
 }

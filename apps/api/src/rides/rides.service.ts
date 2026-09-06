@@ -12,14 +12,16 @@ import {
 } from '@prisma/client';
 import {
   RideStatus,
+  SafetyEventType,
   type CreateRideRequest,
+  type PublicRideView,
   type RideDetail,
   type RideTimelineEntry,
   type RideType,
 } from '@vora/shared';
 import { FaresService } from '../fares/fares.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { toRideDetail } from './rides.mapper';
+import { toPublicRideView, toRideDetail } from './rides.mapper';
 
 /** Only consider drivers within this radius when dispatching a request. */
 const SEARCH_RADIUS_M = 15000;
@@ -232,6 +234,35 @@ export class RidesService {
     }
 
     return toRideDetail(ride);
+  }
+
+  /** No auth required — the ride id itself is the share-link capability, same as Uber's live-tracking links. */
+  async getPublicRideView(rideId: string): Promise<PublicRideView> {
+    const ride = await this.prisma.ride.findUnique({
+      where: { id: rideId },
+      include: RIDE_INCLUDE,
+    });
+    if (!ride) throw new NotFoundException('Ride not found');
+
+    return toPublicRideView(ride);
+  }
+
+  async recordSafetyEvent(
+    rideId: string,
+    requesterId: string,
+    type: SafetyEventType,
+    lat: number,
+    lng: number,
+  ): Promise<void> {
+    const ride = await this.prisma.ride.findUnique({ where: { id: rideId } });
+    if (!ride) throw new NotFoundException('Ride not found');
+    if (ride.riderId !== requesterId && ride.driverId !== requesterId) {
+      throw new ForbiddenException('Not a participant in this ride');
+    }
+
+    await this.prisma.safetyEvent.create({
+      data: { rideId, type, lat, lng },
+    });
   }
 
   private async transitionStatus(
