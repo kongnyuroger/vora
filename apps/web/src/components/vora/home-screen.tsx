@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { Flag, Locate, LogOut, Search, ShieldCheck } from "lucide-react";
 import {
+  PaymentMethod,
   RideStatus,
   RideType,
   Role,
@@ -15,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { BottomSheet, type SheetSnap } from "@/components/vora/bottom-sheet";
 import { LandmarkSearch } from "@/components/vora/map/landmark-search";
 import type { MapCanvasHandle } from "@/components/vora/map/map-canvas";
+import { PaymentMethodPicker } from "@/components/vora/payment/payment-method-picker";
 import { OnTripSheet } from "@/components/vora/ride/on-trip-sheet";
 import { RideTypeCarousel } from "@/components/vora/ride/ride-type-carousel";
 import { SearchingSheet } from "@/components/vora/ride/searching-sheet";
@@ -57,6 +59,11 @@ export function HomeScreen({ copy }: { copy: HomeScreenCopy }) {
   const [dropoff, setDropoff] = useState<LandmarkSearchResult | null>(null);
   const [selectedRideType, setSelectedRideType] = useState<RideType>(
     RideType.MOTO,
+  );
+  // Cash is the default everywhere in this build — it is what most riders
+  // actually hand over, and it never depends on a provider being reachable.
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
+    PaymentMethod.CASH,
   );
   const [isBooking, setIsBooking] = useState(false);
   const [bookingError, setBookingError] = useState<string | null>(null);
@@ -171,6 +178,7 @@ export function HomeScreen({ copy }: { copy: HomeScreenCopy }) {
           dropoffLat: dropoff.lat,
           dropoffLng: dropoff.lng,
           dropoffLabel: dropoff.name,
+          paymentMethod,
         },
         accessToken,
       );
@@ -371,6 +379,19 @@ export function HomeScreen({ copy }: { copy: HomeScreenCopy }) {
                   selected={selectedRideType}
                   onSelect={setSelectedRideType}
                 />
+
+                {accessToken && (
+                  <PaymentMethodPicker
+                    selected={paymentMethod}
+                    onSelect={setPaymentMethod}
+                    fareXaf={
+                      fareQuote.quotes.find(
+                        (q) => q.rideType === selectedRideType,
+                      )?.breakdown.totalXaf ?? 0
+                    }
+                    token={accessToken}
+                  />
+                )}
 
                 {bookingError && (
                   <p className="text-caption text-destructive">

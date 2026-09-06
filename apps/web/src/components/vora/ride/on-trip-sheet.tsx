@@ -12,6 +12,7 @@ import {
   type SafetyAlertPayload,
 } from "@vora/shared";
 import { Button } from "@/components/ui/button";
+import { PaymentSummary } from "@/components/vora/payment/payment-summary";
 import { formatXaf } from "@/lib/utils";
 
 interface OnTripSheetProps {
@@ -48,6 +49,7 @@ export function OnTripSheet({
   onDismissSafetyAlert,
 }: OnTripSheetProps) {
   const t = useTranslations("Ride");
+  const tPayment = useTranslations("Payment");
   const locale = useLocale();
   const isDriver = role === Role.DRIVER;
   const isTerminal =
@@ -125,10 +127,23 @@ export function OnTripSheet({
         <span className="text-caption text-secondary-foreground/70">
           {t("fare")}
         </span>
-        <span className="text-body font-semibold text-secondary-foreground">
-          {formatXaf(ride.fareXaf)}
+        <span className="flex items-center gap-2">
+          <span className="rounded-full bg-vora-green-100 px-2.5 py-1 text-caption font-medium text-vora-green-700">
+            {tPayment(`method.${ride.paymentMethod}`)}
+          </span>
+          <span className="text-body font-semibold text-secondary-foreground">
+            {formatXaf(ride.fareXaf)}
+          </span>
         </span>
       </div>
+
+      {ride.status === RideStatus.COMPLETED && (
+        <PaymentSummary
+          rideId={ride.id}
+          method={ride.paymentMethod}
+          amountXaf={ride.fareXaf}
+        />
+      )}
 
       {!isTerminal &&
         (confirmingSos ? (

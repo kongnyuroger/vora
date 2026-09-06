@@ -168,15 +168,16 @@ model FareQuote {
 }
 
 model Payment {
-  id          String        @id @default(cuid())
-  rideId      String        @unique
-  ride        Ride          @relation(fields: [rideId], references: [id])
-  method      PaymentMethod
-  status      PaymentStatus @default(PENDING)
-  providerRef String?
-  amountXaf   Int
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id            String        @id @default(cuid())
+  rideId        String        @unique
+  ride          Ride          @relation(fields: [rideId], references: [id])
+  method        PaymentMethod
+  status        PaymentStatus @default(PENDING)
+  providerRef   String?
+  amountXaf     Int
+  failureReason String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   @@map("payments")
 }
@@ -186,10 +187,16 @@ model WalletTransaction {
   userId    String
   user      User                  @relation(fields: [userId], references: [id])
   type      WalletTransactionType
+  status    PaymentStatus         @default(SUCCESS)
+  /** Which rail funded a TOPUP; null for RIDE debits, which move only our own ledger. */
+  method    PaymentMethod?
   amountXaf Int
+  /** Provider reference for a MoMo top-up; the ride id for a RIDE debit. */
   ref       String?
   createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
 
+  @@index([userId, createdAt])
   @@map("wallet_transactions")
 }
 

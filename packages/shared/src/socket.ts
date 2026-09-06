@@ -22,5 +22,6 @@ export const SOCKET_EVENTS = {
   RIDE_TAKEN: "ride:taken",
   RIDE_STATUS: "ride:status",
   RIDE_SAFETY_ALERT: "ride:safety-alert",
+  PAYMENT_STATUS: "payment:status",
   ERROR: "error",
 } as const;

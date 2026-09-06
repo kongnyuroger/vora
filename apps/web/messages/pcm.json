@@ -67,6 +67,29 @@
     "surge": "Peak time price",
     "total": "Total"
   },
+  "Payment": {
+    "payWith": "Pay with",
+    "method": {
+      "CASH": "Cash",
+      "MOMO_MTN": "MTN MoMo",
+      "MOMO_ORANGE": "Orange Money",
+      "WALLET": "VORA Wallet"
+    },
+    "walletShort": "{amount} remain — load your wallet make you fit pay",
+    "topUp": "Load am",
+    "topUpTitle": "Load your wallet",
+    "topUpConfirm": "Load am",
+    "topUpSending": "E dey send…",
+    "topUpPending": "Approve di prompt for your phone make di load finish",
+    "topUpFailed": "Load no work — try again",
+    "close": "Close am",
+    "paid": "Dem don pay {amount}",
+    "awaitingPayment": "E dey wait for payment",
+    "awaitingHint": "Approve di {method} prompt for di phone",
+    "checkStatus": "Check am",
+    "paymentFailed": "Payment no pass",
+    "collectCash": "Collect di money for cash instead"
+  },
   "Ride": {
     "book": "Book am",
     "booking": "E dey book…",

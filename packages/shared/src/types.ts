@@ -104,14 +104,19 @@ export interface Payment {
   status: PaymentStatus;
   providerRef: string | null;
   amountXaf: number;
+  /** Populated on FAILED — e.g. an insufficient wallet balance or a declined MoMo prompt. */
+  failureReason: string | null;
+  createdAt: string;
 }
 
 export interface WalletTransaction {
   id: string;
   userId: string;
   type: WalletTransactionType;
+  status: PaymentStatus;
   amountXaf: number;
   ref: string | null;
+  createdAt: string;
 }
 
 export interface SavedPlace {
