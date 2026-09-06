@@ -25,7 +25,7 @@ import type { AppLocale } from "@/i18n/routing";
 import { useAuthStore } from "@/stores/auth-store";
 import { useRideStore } from "@/stores/ride-store";
 import { useGeolocation } from "@/hooks/use-geolocation";
-import { createRide, getFareQuote } from "@/lib/api";
+import { createRide, getFareQuote, getNearbyDrivers } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 const MapCanvas = dynamic(
@@ -42,6 +42,9 @@ export interface HomeScreenCopy {
   cta: string;
   scaffoldNotice: string;
 }
+
+/** Slow enough to be free on mobile data, quick enough that the map isn't stale. */
+const NEARBY_REFRESH_MS = 20000;
 
 const LOCALES: { code: AppLocale; label: string }[] = [
   { code: "fr", label: "FR" },
@@ -102,6 +105,23 @@ export function HomeScreen({ copy }: { copy: HomeScreenCopy }) {
   useEffect(() => {
     mapRef.current?.setDriverLocation(driverLocation);
   }, [driverLocation]);
+
+  // Ambient "the city is alive" layer. Dropped once a ride is under way so the
+  // assigned driver's marker isn't lost in a crowd of unrelated pins.
+  const { data: nearbyDrivers } = useQuery({
+    queryKey: [
+      "nearbyDrivers",
+      userPosition?.lat?.toFixed(3),
+      userPosition?.lng?.toFixed(3),
+    ],
+    queryFn: () => getNearbyDrivers(userPosition!, accessToken!),
+    enabled: !!userPosition && !!accessToken && !activeRide,
+    refetchInterval: NEARBY_REFRESH_MS,
+  });
+
+  useEffect(() => {
+    mapRef.current?.setNearbyDrivers(activeRide ? [] : (nearbyDrivers ?? []));
+  }, [nearbyDrivers, activeRide]);
 
   const {
     data: fareQuote,
