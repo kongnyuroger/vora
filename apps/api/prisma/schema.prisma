@@ -188,6 +188,8 @@ model WalletTransaction {
   user      User                  @relation(fields: [userId], references: [id])
   type      WalletTransactionType
   status    PaymentStatus         @default(SUCCESS)
+  /** Which rail funded a TOPUP; null for RIDE debits, which move only our own ledger. */
+  method    PaymentMethod?
   amountXaf Int
   /** Provider reference for a MoMo top-up; the ride id for a RIDE debit. */
   ref       String?

@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { FaresModule } from './fares/fares.module';
 import { HealthModule } from './health/health.module';
 import { LandmarksModule } from './landmarks/landmarks.module';
+import { PaymentsModule } from './payments/payments.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RidesModule } from './rides/rides.module';
 import { RoutingModule } from './routing/routing.module';
@@ -19,6 +20,7 @@ import { RoutingModule } from './routing/routing.module';
     LandmarksModule,
     RoutingModule,
     FaresModule,
+    PaymentsModule,
     RidesModule,
   ],
   controllers: [AppController],
