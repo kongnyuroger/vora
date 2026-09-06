@@ -82,7 +82,13 @@
     "topUpSending": "Envoi…",
     "topUpPending": "Validez la demande sur votre téléphone pour finir la recharge",
     "topUpFailed": "Recharge échouée — réessayez",
-    "close": "Fermer"
+    "close": "Fermer",
+    "paid": "{amount} payés",
+    "awaitingPayment": "En attente du paiement",
+    "awaitingHint": "Validez la demande {method} sur le téléphone",
+    "checkStatus": "Vérifier",
+    "paymentFailed": "Le paiement n'a pas abouti",
+    "collectCash": "Encaissez le prix en espèces"
   },
   "Ride": {
     "book": "Réserver",

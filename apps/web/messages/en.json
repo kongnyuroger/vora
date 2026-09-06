@@ -82,7 +82,13 @@
     "topUpSending": "Sending…",
     "topUpPending": "Approve the prompt on your phone to finish the top-up",
     "topUpFailed": "Top-up failed — try again",
-    "close": "Close"
+    "close": "Close",
+    "paid": "{amount} paid",
+    "awaitingPayment": "Waiting for payment",
+    "awaitingHint": "Approve the {method} prompt on the phone",
+    "checkStatus": "Check",
+    "paymentFailed": "Payment didn't go through",
+    "collectCash": "Collect the fare in cash instead"
   },
   "Ride": {
     "book": "Book",
