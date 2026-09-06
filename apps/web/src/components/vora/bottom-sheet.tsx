@@ -12,6 +12,9 @@ const SNAP_VH: Record<SheetSnap, number> = { peek: 18, half: 52, full: 92 };
 /** §7 Motion: spring slide, stiffness ~300, damping ~30. */
 const SHEET_SPRING = { type: "spring", stiffness: 300, damping: 30 } as const;
 
+/** Height of the drag handle strip, excluded from the scrollable content area. */
+const HANDLE_H = 26;
+
 interface BottomSheetProps {
   snap: SheetSnap;
   onSnapChange: (snap: SheetSnap) => void;
@@ -95,7 +98,18 @@ export function BottomSheet({
       >
         <span className="h-1.5 w-10 rounded-full bg-border" />
       </button>
-      <div className="flex-1 touch-pan-y overflow-y-auto px-5 pb-6">
+      <div
+        // The panel is always full-height and slid down, so at peek/half its
+        // lower part sits below the viewport. Capping the scroll area to the
+        // visible slice keeps content — the primary CTA above all — reachable
+        // by scrolling instead of stranding it off-screen.
+        style={{
+          maxHeight: viewportH
+            ? (SNAP_VH[snap] / 100) * viewportH - HANDLE_H
+            : undefined,
+        }}
+        className="flex-1 touch-pan-y overflow-y-auto px-5 pb-6"
+      >
         {children}
       </div>
     </motion.div>
