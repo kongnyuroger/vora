@@ -14,6 +14,7 @@ import {
   SafetyEventType,
   SOCKET_EVENTS,
   type DriverLocationPayload,
+  type PaymentStatusPayload,
   type RideDetail,
   type RideStatusPayload,
   type RideTakenPayload,
@@ -21,6 +22,7 @@ import {
 } from '@vora/shared';
 import type { Server, Socket } from 'socket.io';
 import type { JwtPayload } from '../auth/auth.service';
+import { PaymentsService } from '../payments/payments.service';
 import { RidesService } from './rides.service';
 
 interface SocketUser {
@@ -54,6 +56,7 @@ export class RidesGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   constructor(
     private readonly rides: RidesService,
+    private readonly payments: PaymentsService,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
   ) {}
@@ -197,15 +200,26 @@ export class RidesGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage(SOCKET_EVENTS.RIDE_COMPLETE)
   async onRideComplete(client: AppSocket, body: { rideId: string }) {
-    await this.handleDriverTransition(
+    const ride = await this.handleDriverTransition(
       client,
       body?.rideId,
       RideStatus.IN_PROGRESS,
       RideStatus.COMPLETED,
     );
-    if (client.data.activeRideId === body?.rideId) {
+    if (!ride) return;
+
+    if (client.data.activeRideId === ride.id) {
       client.data.activeRideId = undefined;
     }
+
+    // Both sides of the ride room need the outcome: the rider to see whether
+    // the fare is settled or still waiting on a MoMo prompt, the driver to
+    // know whether to collect cash.
+    const payment = await this.payments.settleRide(ride.id);
+    const payload: PaymentStatusPayload = { rideId: ride.id, payment };
+    this.server
+      .to(rideRoom(ride.id))
+      .emit(SOCKET_EVENTS.PAYMENT_STATUS, payload);
   }
 
   @SubscribeMessage(SOCKET_EVENTS.RIDE_SOS)
@@ -263,14 +277,15 @@ export class RidesGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  /** Returns the updated ride, or null if the transition was rejected. */
   private async handleDriverTransition(
     client: AppSocket,
     rideId: string | undefined,
     from: RideStatus,
     to: RideStatus,
-  ) {
+  ): Promise<RideDetail | null> {
     const user = this.requireUser(client, Role.DRIVER);
-    if (!user || !rideId) return;
+    if (!user || !rideId) return null;
 
     try {
       const ride = await this.rides.advanceStatus(
@@ -280,8 +295,10 @@ export class RidesGateway implements OnGatewayConnection, OnGatewayDisconnect {
         to,
       );
       this.emitStatus(ride);
+      return ride;
     } catch (err) {
       this.emitError(client, this.errorMessage(err));
+      return null;
     }
   }
 

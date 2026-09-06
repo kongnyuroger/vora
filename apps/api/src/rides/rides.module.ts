@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { FaresModule } from '../fares/fares.module';
+import { PaymentsModule } from '../payments/payments.module';
 import { RidesController } from './rides.controller';
 import { RidesGateway } from './rides.gateway';
 import { RidesService } from './rides.service';
@@ -9,6 +10,7 @@ import { RidesService } from './rides.service';
 @Module({
   imports: [
     FaresModule,
+    PaymentsModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
