@@ -10,6 +10,7 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { RideType, type NearbyDriver, type RouteGeometry } from "@vora/shared";
 
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
 const YAOUNDE_CENTER: [number, number] = [11.5021, 3.848];
 const DEFAULT_ZOOM = 12;
 const FLY_ZOOM = 15;
@@ -45,9 +46,9 @@ export const MapCanvas = forwardRef<MapCanvasHandle>(function MapCanvas(
   const nearbyMarkersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());
 
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    if (!containerRef.current || mapRef.current || !MAPBOX_TOKEN) return;
 
-    mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
+    mapboxgl.accessToken = MAPBOX_TOKEN;
 
     const map = new mapboxgl.Map({
       container: containerRef.current,
@@ -281,6 +282,15 @@ export const MapCanvas = forwardRef<MapCanvasHandle>(function MapCanvas(
       */}
       <div className="absolute inset-0">
         <div ref={containerRef} className="h-full w-full" />
+        {/* Without a token Mapbox fails silently to a black rectangle, which
+            looks like a broken app rather than a missing env var. */}
+        {!MAPBOX_TOKEN && (
+          <div className="absolute inset-0 flex items-center justify-center bg-vora-ink px-8 text-center">
+            <p className="text-caption text-white/70">
+              Map unavailable — NEXT_PUBLIC_MAPBOX_TOKEN is not set.
+            </p>
+          </div>
+        )}
       </div>
       <style jsx global>{`
         .vora-user-dot {

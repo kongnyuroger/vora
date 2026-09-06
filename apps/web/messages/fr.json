@@ -1,4 +1,7 @@
 {
+  "Common": {
+    "retry": "Réessayer"
+  },
   "Home": {
     "title": "VORA",
     "tagline": "Réservez un bendskin, un taxi ou une course partagée par point de repère, à prix fixe et juste.",
@@ -44,7 +47,8 @@
     "change": "Changer",
     "useMyLocation": "Utiliser ma position",
     "locating": "Localisation…",
-    "locationDenied": "Accès à la position refusé — activez-le dans les réglages du navigateur"
+    "locationDenied": "Accès à la position refusé — activez-le dans les réglages du navigateur",
+    "searchError": "VORA est injoignable — vérifiez votre connexion"
   },
   "RideTypes": {
     "heading": "Choisissez une course",
@@ -97,6 +101,7 @@
     "noDriversFound": "Aucun chauffeur à proximité pour le moment — réessayez bientôt",
     "searchingTitle": "Recherche d'un chauffeur…",
     "searchingNear": "Près de {pickup}",
+    "searchingSlow": "Recherche toujours en cours. Les chauffeurs proches sont peut-être occupés — patientez ou annulez.",
     "cancel": "Annuler",
     "fare": "Prix",
     "pin": "Code PIN",

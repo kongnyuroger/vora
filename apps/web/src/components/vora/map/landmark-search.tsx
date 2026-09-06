@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { MapPin, Search, ShoppingBag, Signpost, X } from "lucide-react";
 import type { LandmarkSearchResult } from "@vora/shared";
+import { Button } from "@/components/ui/button";
 import { searchLandmarks } from "@/lib/api";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { cn } from "@/lib/utils";
@@ -33,10 +34,16 @@ export function LandmarkSearch({
   placeholder,
 }: LandmarkSearchProps) {
   const t = useTranslations("Map");
+  const tCommon = useTranslations("Common");
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebouncedValue(query, 300);
 
-  const { data: results, isFetching } = useQuery({
+  const {
+    data: results,
+    isFetching,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["landmarks", debouncedQuery, proximity],
     queryFn: () => searchLandmarks(debouncedQuery, proximity),
     enabled: debouncedQuery.trim().length >= 2,
@@ -74,7 +81,20 @@ export function LandmarkSearch({
             </div>
           )}
 
-          {!isFetching && results?.length === 0 && (
+          {/* An unreachable API must not read as "this place doesn't exist" —
+              that sends the rider off retyping a name that was never wrong. */}
+          {!isFetching && isError && (
+            <div className="flex items-center gap-2 px-2 py-3">
+              <span className="flex-1 text-caption text-destructive">
+                {t("searchError")}
+              </span>
+              <Button size="sm" variant="outline" onClick={() => refetch()}>
+                {tCommon("retry")}
+              </Button>
+            </div>
+          )}
+
+          {!isFetching && !isError && results?.length === 0 && (
             <div className="px-2 py-3 text-caption text-muted-foreground">
               {t("noResults")}
             </div>

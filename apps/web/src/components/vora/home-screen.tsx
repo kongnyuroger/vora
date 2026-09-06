@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { Flag, Locate, LogOut, Search, ShieldCheck } from "lucide-react";
+import { Flag, Locate, LogOut, Search, ShieldCheck, WifiOff } from "lucide-react";
 import {
   PaymentMethod,
   RideStatus,
@@ -19,6 +19,7 @@ import type { MapCanvasHandle } from "@/components/vora/map/map-canvas";
 import { PaymentMethodPicker } from "@/components/vora/payment/payment-method-picker";
 import { OnTripSheet } from "@/components/vora/ride/on-trip-sheet";
 import { RideTypeCarousel } from "@/components/vora/ride/ride-type-carousel";
+import { RideTypeSkeleton } from "@/components/vora/ride/ride-type-skeleton";
 import { SearchingSheet } from "@/components/vora/ride/searching-sheet";
 import { Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
@@ -57,6 +58,7 @@ export function HomeScreen({ copy }: { copy: HomeScreenCopy }) {
   const tMap = useTranslations("Map");
   const tFare = useTranslations("Fare");
   const tRide = useTranslations("Ride");
+  const tCommon = useTranslations("Common");
   const [snap, setSnap] = useState<SheetSnap>("peek");
   const [pickup, setPickup] = useState<LandmarkSearchResult | null>(null);
   const [dropoff, setDropoff] = useState<LandmarkSearchResult | null>(null);
@@ -127,6 +129,7 @@ export function HomeScreen({ copy }: { copy: HomeScreenCopy }) {
     data: fareQuote,
     isFetching: isQuoting,
     isError: isQuoteError,
+    refetch: refetchQuote,
   } = useQuery({
     queryKey: [
       "fareQuote",
@@ -380,16 +383,20 @@ export function HomeScreen({ copy }: { copy: HomeScreenCopy }) {
               />
             )}
 
-            {pickup && dropoff && isQuoting && (
-              <p className="text-caption text-muted-foreground">
-                {tFare("loadingQuote")}
-              </p>
+            {pickup && dropoff && isQuoting && !fareQuote && (
+              <RideTypeSkeleton />
             )}
 
             {pickup && dropoff && isQuoteError && (
-              <p className="text-caption text-destructive">
-                {tFare("quoteError")}
-              </p>
+              <div className="flex items-center gap-3 rounded-card border border-destructive/30 bg-destructive/5 px-4 py-3.5">
+                <WifiOff className="size-5 shrink-0 text-destructive" />
+                <span className="flex-1 text-caption text-destructive">
+                  {tFare("quoteError")}
+                </span>
+                <Button size="sm" variant="outline" onClick={() => refetchQuote()}>
+                  {tCommon("retry")}
+                </Button>
+              </div>
             )}
 
             {pickup && dropoff && fareQuote && (
